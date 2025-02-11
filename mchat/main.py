@@ -1,7 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
 
-from mchat.router import auth, user
+import mchat
+from mchat.web import auth, user
 
 app = FastAPI()
 app.include_router(auth.router)
