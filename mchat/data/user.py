@@ -1,21 +1,26 @@
-from mchat.model import engine
-from mchat.model.user import User
-from sqlmodel import Session, select
+from mchat.model.user import User, UserIn
 
 
-def create(user: User) -> bool:
-    with Session(engine) as session:
-        session.add(user)
-        session.commit()
+def create(curs, user: UserIn) -> bool:
+    statement = """INSERT INTO user (username, password) VALUES(?, ?)"""
+    curs.execute(statement, (user.username, user.password))
     return True
 
 
-def get_by_username(username: str) -> User | None:
-    with Session(engine) as session:
-        statement = select(User).where(User.username == username)
-        return session.exec(statement).one_or_none()
+def get_by_username(curs, username: str) -> User | None:
+    statement = """SELECT * FROM user WHERE username = ?"""
+    curs.execute(statement, (username,))
+    user = curs.fetchone()
+    if user:
+        return User(**user)
+    return None
 
 
-def get_all() -> list[User] | None:
-    with Session(engine) as session:
-        return session.exec(select(User)).all()
+def get_all(curs) -> list[User] | None:
+    statement = """SELECT * FROM user"""
+    curs.execute(statement)
+    rows = curs.fetchall()
+    if rows:
+        users = [User(**row) for row in rows]
+        return users
+    return None

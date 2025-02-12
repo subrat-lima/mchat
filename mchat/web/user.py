@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter
 
 import mchat.model.user as m_user
@@ -6,8 +8,8 @@ import mchat.service.user as s_user
 router = APIRouter(prefix="/users")
 
 
-@router.get("/", response_model=list[m_user.UserOut])
-async def get_all() -> list[m_user.UserOut]:
+@router.get("/", response_model=Optional[list[m_user.UserOut]])
+async def get_all() -> Optional[list[m_user.UserOut]]:
     return s_user.get_all()
 
 

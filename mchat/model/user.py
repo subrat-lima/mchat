@@ -1,12 +1,11 @@
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
 
 
-class User(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    username: str = Field(unique=True)
+class User(BaseModel):
+    id: int
+    username: str
     password: str
-    is_active: bool = False
+    is_active: bool
 
 
 class UserIn(BaseModel):
