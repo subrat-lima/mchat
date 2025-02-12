@@ -37,7 +37,6 @@ def register(curs, in_user: m_user.UserIn) -> bool:
 @db_connect
 def login(curs, in_user: LoginUserForm) -> m_token.Token:
     db_user = d_user.get_by_username(curs, in_user.username)
-    print("db_user: ", db_user)
     if not db_user:
         raise HTTPException(status_code=404, detail="user not found")
     if not match_password(in_user.password, db_user.password):

@@ -7,6 +7,15 @@ def create(curs, user: UserIn) -> bool:
     return True
 
 
+def get_one(curs, id: int) -> User | None:
+    statement = """SELECT * FROM user WHERE id = ?"""
+    curs.execute(statement, (id,))
+    user = curs.fetchone()
+    if user:
+        return User(**user)
+    return None
+
+
 def get_by_username(curs, username: str) -> User | None:
     statement = """SELECT * FROM user WHERE username = ?"""
     curs.execute(statement, (username,))

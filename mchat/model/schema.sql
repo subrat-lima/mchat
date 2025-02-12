@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS contact (
     user_id  INTEGER NOT NULL,
     friend_id  INTEGER NOT NULL,
     alias TEXT NOT NULL,
+    UNIQUE(user_id, friend_id),
+    UNIQUE(user_id, alias),
     FOREIGN KEY(user_id) REFERENCES user(id),
     FOREIGN KEY(friend_id) REFERENCES user(id)
 );
