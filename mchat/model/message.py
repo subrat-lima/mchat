@@ -7,8 +7,13 @@ class ContentType(BaseModel):
 
 
 class Message(BaseModel):
-    id: int
+    id: int | None = None
     chat_id: int
     user_id: int
+    content_type_id: int
+    content: str
+
+
+class MessageIn(BaseModel):
     content_type_id: int
     content: str
