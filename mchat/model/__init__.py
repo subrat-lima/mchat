@@ -26,4 +26,12 @@ def db_init(curs):
     curs.executescript(query)
 
 
+@db_connect
+def db_add_rows(curs):
+    with open("mchat/model/insert.sql") as f:
+        query = f.read()
+    curs.executescript(query)
+
+
 db_init()
+# db_add_rows()
