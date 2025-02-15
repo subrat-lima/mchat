@@ -27,3 +27,22 @@ def get_direct_id(curs, user_id: int, contact_id: int) -> Optional[int]:
     if member:
         return Member(**member).chat_id
     return None
+
+
+def get_all_in_chat(curs, chat_id: int) -> Optional[list[Member]]:
+    statement = """SELECT * FROM member WHERE chat_id = ?"""
+    curs.execute(statement, (chat_id,))
+    rows = curs.fetchall()
+    if rows:
+        members = [Member(**row) for row in rows]
+        return members
+    return None
+
+
+def get_one(curs, chat_id: int, contact_id: int) -> bool:
+    statement = """SELECT * FROM member WHERE chat_id = ? AND user_id = ?"""
+    curs.execute(statement, (chat_id, contact_id))
+    member = curs.fetchone()
+    if member:
+        return True
+    return False
