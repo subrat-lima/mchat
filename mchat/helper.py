@@ -1,5 +1,15 @@
 import sqlite3
 
+import bcrypt
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def match_password(password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+
 
 def dict_factory(cursor, row):
     fields = [column[0] for column in cursor.description]
@@ -17,3 +27,27 @@ def db_connect(func):
         return result
 
     return _db_connect
+
+
+def add_one(curs, statement, data):
+    curs.execute(statement, data)
+    return True
+
+
+def get_one(curs, statement, data, cls):
+    curs.execute(statement, data)
+    row = curs.fetchone()
+    if row:
+        return cls(**row)
+    return None
+
+
+def get(curs, statement, data, cls):
+    if data is None:
+        curs.execute(statement)
+    else:
+        curs.execute(statement, data)
+    rows = curs.fetchall()
+    if rows:
+        return [cls(**row) for row in rows]
+    return None

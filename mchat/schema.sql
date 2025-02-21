@@ -19,8 +19,8 @@ CREATE TABLE groups (
 );
 
 
-DROP TABLE IF EXISTS user_group;
-CREATE TABLE user_group(
+DROP TABLE IF EXISTS user_groups;
+CREATE TABLE user_groups(
     id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
     group_id INTEGER NOT NULL,
@@ -47,8 +47,8 @@ CREATE TABLE messages (
 );
 
 
-DROP TABLE IF EXISTS message_recipient;
-CREATE TABLE message_recipient (
+DROP TABLE IF EXISTS message_recipients;
+CREATE TABLE message_recipients (
     id INTEGER PRIMARY KEY,
     recipient_id INTEGER,
     recipient_group_id INTEGER,

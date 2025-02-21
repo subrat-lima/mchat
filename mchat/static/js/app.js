@@ -6,7 +6,6 @@ import { getToken, deleteToken } from "./helper.js";
 async function init() {
   let token = getToken();
   if (token) {
-    //new Contact();
     new Chat();
     console.log("chat view");
   } else {

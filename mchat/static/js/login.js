@@ -1,4 +1,4 @@
-import { setToken } from "./helper.js";
+import { setToken, domElem, domText, domSet, showToast } from "./helper.js";
 
 export default class Login {
   constructor() {
@@ -6,41 +6,33 @@ export default class Login {
   }
 
   uiShow() {
-    let form = document.createElement("form");
-    form.classList.add("container");
-    let legend = document.createElement("legend");
-    let legend_text = document.createTextNode("login");
-    let username_label = document.createElement("label");
-    let username_text = document.createTextNode("username");
-    let username = document.createElement("input");
-    username.setAttribute("type", "text");
-    username.setAttribute("placeholder", "username");
-    username.setAttribute("name", "username");
-    let password_label = document.createElement("password");
-    let password_text = document.createTextNode("password");
-    let password = document.createElement("input");
-    password.setAttribute("type", "password");
-    password.setAttribute("placeholder", "password");
-    password.setAttribute("name", "password");
-    let submit = document.createElement("input");
-    submit.setAttribute("type", "submit");
-    submit.setAttribute("value", "login");
-    username_label.appendChild(username_text);
-    username_label.appendChild(username);
-    password_label.appendChild(password_text);
-    password_label.appendChild(password);
-    let fieldset = document.createElement("fieldset");
+    let legend = domElem("legend");
+    domSet(legend, [domText("login")]);
 
-    legend.appendChild(legend_text);
-    fieldset.appendChild(username_label);
-    fieldset.appendChild(password_label);
-    form.appendChild(legend);
-    form.appendChild(fieldset);
-    form.appendChild(submit);
-    form.addEventListener("submit", this.apiLogin);
-    let main = document.querySelector("main");
-    main.innerHTML = "";
-    main.appendChild(form);
+    let username_label = domElem("label");
+    let username = domElem("input", {
+      type: "text",
+      placeholder: "username",
+      name: "username",
+    });
+    let username_text = domText("username");
+    let password_label = domElem("label");
+    let password = domElem("input", {
+      type: "password",
+      placeholder: "password",
+      name: "password",
+    });
+    domSet(username_label, [domText("username"), username]);
+    domSet(password_label, [domText("password"), password]);
+
+    let fieldset = domElem("fieldset");
+    domSet(fieldset, [username_label, password_label]);
+
+    let submit = domElem("input", { type: "submit", value: "login" });
+
+    let form = domElem("form", {}, { submit: this.apiLogin });
+    domSet(form, [legend, fieldset, submit]);
+    domSet(null, [form]);
   }
 
   async apiLogin(e) {
@@ -55,11 +47,15 @@ export default class Login {
       body: form_data,
     });
     if (response.status == 200) {
-      let resp = await response.json();
-      let token = resp["access_token"];
+      response = response.json();
+      let token = response["access_token"];
       setToken(token);
 
+      showToast("user logged in successfully");
       window.location.replace("/");
+    } else {
+      response = response.json();
+      showToast(response.detail, "error");
     }
   }
 }

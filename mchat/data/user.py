@@ -1,35 +1,22 @@
+import mchat.helper as db
 from mchat.model import User, UserIn
 
 
 def add(curs, user: UserIn) -> bool:
-    statement = """INSERT INTO user (username, password) VALUES(?, ?)"""
-    curs.execute(statement, (user.username, user.password))
-    return True
+    statement = """INSERT INTO users (username, password) VALUES(?, ?)"""
+    return db.add_one(curs, statement, (user.username, user.password))
 
 
-def get_one(curs, id: int) -> User | None:
-    statement = """SELECT * FROM user WHERE id = ?"""
-    curs.execute(statement, (id,))
-    user = curs.fetchone()
-    if user:
-        return User(**user)
-    return None
+def get(curs, id: int) -> User | None:
+    statement = """SELECT * FROM users WHERE id = ?"""
+    return db.get_one(curs, statement, (id,), User)
 
 
 def get_by_username(curs, username: str) -> User | None:
-    statement = """SELECT * FROM user WHERE username = ?"""
-    curs.execute(statement, (username,))
-    user = curs.fetchone()
-    if user:
-        return User(**user)
-    return None
+    statement = """SELECT * FROM users WHERE username = ?"""
+    return db.get_one(curs, statement, (username,), User)
 
 
 def get_all(curs) -> list[User] | None:
-    statement = """SELECT * FROM user"""
-    curs.execute(statement)
-    rows = curs.fetchall()
-    if rows:
-        users = [User(**row) for row in rows]
-        return users
-    return None
+    statement = """SELECT * FROM users"""
+    return db.get(curs, statement, None, User)

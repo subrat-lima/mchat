@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
 
+class SuccessHandler(BaseModel):
+    status_code: int = 200
+    detail: str
+
+
 class User(BaseModel):
     id: int
     username: str
@@ -14,6 +19,10 @@ class UserIn(BaseModel):
     password: str
 
 
-class UserOut(BaseModel):
-    id: int
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class TokenData(BaseModel):
     username: str

@@ -29,9 +29,17 @@ export function domText(name) {
   return document.createTextNode(name);
 }
 
-export function domSet(parent, children = []) {
+export function domSet(parent = null, children = []) {
+  if (!parent) {
+    parent = document.querySelector("main");
+  }
   parent.innerHTML = "";
   for (let child of [...children]) {
     parent.appendChild(child);
   }
+}
+
+export function showToast(msg, category = "info") {
+  // TODO: add toast
+  console.log(`category: ${category}\nmsg: ${msg}`);
 }
