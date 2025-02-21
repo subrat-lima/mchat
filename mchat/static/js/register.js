@@ -49,11 +49,12 @@ export default class Register {
       headers: {
         "Content-Type": "application/json",
       },
-    }).then((resp) => resp.json());
+    });
     if (response.status == 200) {
       showToast("user registered successfully");
       window.location.replace("/");
     } else {
+      response = response.json();
       showToast(response.detail, "error");
     }
   }

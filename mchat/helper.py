@@ -29,12 +29,13 @@ def db_connect(func):
     return _db_connect
 
 
-def add_one(curs, statement, data):
+def add(curs, statement, data):
     curs.execute(statement, data)
-    return True
+    row = curs.fetchone()
+    return row if row else None
 
 
-def get_one(curs, statement, data, cls):
+def get(curs, statement, data, cls):
     curs.execute(statement, data)
     row = curs.fetchone()
     if row:
@@ -42,7 +43,7 @@ def get_one(curs, statement, data, cls):
     return None
 
 
-def get(curs, statement, data, cls):
+def get_all(curs, statement, data, cls):
     if data is None:
         curs.execute(statement)
     else:
