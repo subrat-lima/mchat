@@ -55,8 +55,10 @@ export default class Login {
       body: form_data,
     });
     if (response.status == 200) {
-      let token = await response.json();
+      let resp = await response.json();
+      let token = resp["access_token"];
       setToken(token);
+
       window.location.replace("/");
     }
   }

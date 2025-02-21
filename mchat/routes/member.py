@@ -21,7 +21,7 @@ async def add_direct(
 
 
 @router.post("/get_all")
-async def add_direct(
+async def get_all(
     current_user: s_user.CurrentUser, chat_id: int
 ) -> Optional[list[m_member.Member]]:
     return s_member.get_all(current_user, chat_id)

@@ -33,4 +33,8 @@ def add(curs, user: m_user.User, in_contact: m_contact.ContactIn) -> bool:
 
 @db_connect
 def get_all(curs, user: m_user.User) -> Optional[list[m_contact.Contact]]:
-    return d_contact.get_all_by_user_id(curs, user.id)
+    contacts = d_contact.get_all_by_user_id(curs, user.id)
+    if contacts:
+        return contacts
+    else:
+        return []

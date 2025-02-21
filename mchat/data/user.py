@@ -1,7 +1,7 @@
-from mchat.model.user import User, UserIn
+from mchat.model import User, UserIn
 
 
-def create(curs, user: UserIn) -> bool:
+def add(curs, user: UserIn) -> bool:
     statement = """INSERT INTO user (username, password) VALUES(?, ?)"""
     curs.execute(statement, (user.username, user.password))
     return True

@@ -44,9 +44,6 @@ export default class Register {
   async apiRegister(e) {
     e.preventDefault();
     let form = e.target;
-    let form_data = new FormData();
-    form_data.append("username", form.username.value);
-    form_data.append("password", form.password.value);
     let data = {
       username: form.username.value,
       password: form.password.value,

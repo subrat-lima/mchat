@@ -11,7 +11,7 @@ import mchat.service.user as s_user
 router = APIRouter(prefix="/chat")
 
 
-@router.get("/", response_model=Optional[list[m_chat.Chat]])
+@router.get("/", response_model=Optional[list[m_chat.ChatOut]])
 async def get_all(
     current_user: s_user.CurrentUser,
 ) -> Optional[list[m_contact.Contact]]:
