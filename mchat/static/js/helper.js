@@ -29,12 +29,17 @@ export function domText(name) {
   return document.createTextNode(name);
 }
 
-export function domSet(parent = null, children = []) {
+export function domSet(parent = null, children = [], clean = true) {
   if (!parent) {
     parent = document.querySelector("main");
   }
-  parent.innerHTML = "";
-  for (let child of [...children]) {
+  if (clean) {
+    parent.innerHTML = "";
+  }
+  if (!Array.isArray(children)) {
+    children = [children];
+  }
+  for (let child of children) {
     parent.appendChild(child);
   }
 }

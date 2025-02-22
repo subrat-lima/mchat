@@ -1,9 +1,22 @@
+from typing import Optional
+
 from fastapi import HTTPException
 
 import mchat.data.group as d_group
+import mchat.data.message as d_message
+import mchat.data.message_recipient as d_message_recipient
 import mchat.data.user_group as d_user_group
 from mchat.helper import db_connect
-from mchat.model import GroupIn, SuccessHandler, User, UserGroupIn
+from mchat.model import (
+    Chat,
+    GroupIn,
+    Message,
+    MessageIn,
+    MessageRecipientIn,
+    SuccessHandler,
+    User,
+    UserGroupIn,
+)
 
 
 @db_connect
@@ -13,6 +26,7 @@ def add_group(curs, user: User, in_group: GroupIn):
         raise HTTPException(status_code=400, detail="group already exists")
     db_group = d_group.add(curs, user.id, in_group.name)
     user_group = UserGroupIn(user_id=user.id, group_id=db_group["id"], role=2)
+    d_user_group.add(curs, user_group)
     return SuccessHandler(detail="group created successfully", data=db_group)
 
 
@@ -36,7 +50,34 @@ def add_user_group(curs, user: User, in_user_group: UserGroupIn):
     return SuccessHandler(detail="user in group add successfully")
 
 
-# @db_connect
-# def get_all(curs, user: User):
-# return d_chat.get_all_by_user_id(curs, user.id)
-# pass
+@db_connect
+def add_message(curs, user: User, in_message: MessageIn):
+    db_message = d_message.add(curs, user.id, in_message)
+    if in_message.recipient_id:
+        recipient = MessageRecipientIn(
+            recipient_id=in_message.recipient_id,
+            recipient_group_id=in_message.recipient_group_id,
+            message_id=db_message["id"],
+        )
+        d_message_recipient.add(curs, recipient)
+    else:
+        # TODO: add message script for group
+        pass
+
+    return SuccessHandler(detail="message added successfully")
+
+
+@db_connect
+def get_chats(curs, user: User) -> Optional[list[Chat]]:
+    db_user_groups = d_user_group.get_all_by_user(curs, user.id)
+    chats = []
+    for group in db_user_groups:
+        chat = Chat(recipient_id=None, recipient_group_id=group.id, name=group.name)
+        chats.append(chat)
+    db_received_messages = d_message_recipient.get_all_received_messages(curs, user.id)
+    for message in db_received_messages:
+        chats.append(message)
+    db_sent_messages = d_message_recipient.get_all_sent_messages(curs, user.id)
+    for message in db_sent_messages:
+        chats.append(message)
+    return chats

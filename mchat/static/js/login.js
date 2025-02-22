@@ -47,14 +47,14 @@ export default class Login {
       body: form_data,
     });
     if (response.status == 200) {
-      response = response.json();
+      response = await response.json();
       let token = response["access_token"];
       setToken(token);
 
       showToast("user logged in successfully");
       window.location.replace("/");
     } else {
-      response = response.json();
+      response = await response.json();
       showToast(response.detail, "error");
     }
   }

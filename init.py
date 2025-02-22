@@ -12,7 +12,7 @@ def init_db(curs):
 
 
 def main():
-    directory = "instance"
+    directory = ".instance"
     os.makedirs(directory, exist_ok=True)
     init_db()
     print("database initialized")

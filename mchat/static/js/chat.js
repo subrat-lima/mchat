@@ -10,31 +10,26 @@ export default class Chat {
     console.log("chats: ", chats);
     let main = document.querySelector("main");
     let button = domElem("button", {}, { click: this.uiAddChat });
-    let text = domText("add chat");
-    domSet(button, text);
+    domSet(button, domText("add chat"));
 
     let ul = domElem("ul");
+    for (let chat of chats) {
+      let li = domElem("li", {
+        "data-recipient-id": chat["recipient_id"],
+        "data-recipient-group-id": chat["recipient_group_id"],
+      });
+      domSet(li, domText(chat["name"]));
+      domSet(ul, li, false);
+    }
 
-    //for (let contact of contacts) {
-    //  let li = document.createElement("li");
-    //  let a = document.createElement("a");
-    //  let text = document.createTextNode(contact["alias"]);
-    //  a.appendChild(text);
-    //  li.appendChild(a);
-    //  ul.appendChild(li);
-    //}
-
-    domSet(button, button_text);
     domSet(main, [button, ul]);
   }
 
-  uiAddChat() {
-    //new AddContact();
-  }
+  uiAddChat() {}
 
   async apiGetChats() {
     let token = getToken();
-    let response = await fetch("/chat/", {
+    let response = await fetch("/chats/", {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -46,71 +41,3 @@ export default class Chat {
     }
   }
 }
-
-//
-//class AddContact {
-//  constructor() {
-//    this.uiShow();
-//  }
-//
-//  uiShow() {
-//    let form = document.createElement("form");
-//    let legend = document.createElement("legend");
-//    let legend_text = document.createTextNode("add contact");
-//    let fieldset = document.createElement("fieldset");
-//    let username = document.createElement("input");
-//    let username_label = document.createElement("label");
-//    let username_text = document.createTextNode("username");
-//    let alias = document.createElement("input");
-//    let alias_label = document.createElement("label");
-//    let alias_text = document.createTextNode("alias");
-//
-//    let submit = document.createElement("input");
-//    submit.setAttribute("type", "submit");
-//    submit.setAttribute("value", "add");
-//
-//    username.setAttribute("type", "text");
-//    username.setAttribute("name", "username");
-//    alias.setAttribute("type", "text");
-//    alias.setAttribute("name", "alias");
-//
-//    username_label.appendChild(username_text);
-//    username_label.appendChild(username);
-//    alias_label.appendChild(alias_text);
-//    alias_label.appendChild(alias);
-//    legend.appendChild(legend_text);
-//    fieldset.appendChild(username_label);
-//    fieldset.appendChild(alias_label);
-//
-//    form.appendChild(legend);
-//    form.appendChild(fieldset);
-//    form.appendChild(submit);
-//    form.addEventListener("submit", this.apiAdd);
-//    let main = document.querySelector("main");
-//    main.innerHTML = "";
-//    main.appendChild(form);
-//  }
-//
-//  async apiAdd(e) {
-//    e.preventDefault();
-//    let token = getToken();
-//    let form = e.target;
-//    let data = {
-//      username: form.username.value,
-//      alias: form.alias.value,
-//    };
-//
-//    let response = await fetch("/contacts/add", {
-//      method: "POST",
-//      body: JSON.stringify(data),
-//      headers: {
-//        "Content-Type": "application/json",
-//        Authorization: `Bearer ${token}`,
-//      },
-//    });
-//
-//    if (response.status == 200) {
-//      window.location.replace("/");
-//    }
-//  }
-//}

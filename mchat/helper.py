@@ -18,7 +18,7 @@ def dict_factory(cursor, row):
 
 def db_connect(func):
     def _db_connect(*args, **kwargs):
-        conn = sqlite3.connect("instance/mchat.db")
+        conn = sqlite3.connect(".instance/mchat.db")
         conn.row_factory = dict_factory
         curs = conn.cursor()
         result = func(curs, *args, **kwargs)

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import mchat.helper as db
 from mchat.model import Group
 
@@ -15,3 +17,8 @@ def get(curs, id: int) -> Group | None:
 def get_by_owner_and_name(curs, user_id: int, group_name: str) -> Group | None:
     statement = """SELECT * FROM groups WHERE owner_id = ? AND name = ?"""
     return db.get(curs, statement, (user_id, group_name), Group)
+
+
+def get_all(curs) -> Optional[list[Group]]:
+    statement = """SELECT * FROM groups"""
+    return db.get_all(curs, statement, None, Group)

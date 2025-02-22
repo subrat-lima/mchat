@@ -54,7 +54,7 @@ export default class Register {
       showToast("user registered successfully");
       window.location.replace("/");
     } else {
-      response = response.json();
+      response = await response.json();
       showToast(response.detail, "error");
     }
   }

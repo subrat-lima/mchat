@@ -56,3 +56,42 @@ class UserGroup(BaseModel):
     role: int
     create_date: str
     is_active: int
+    name: str
+
+
+class Chat(BaseModel):
+    recipient_id: Optional[int]
+    recipient_group_id: Optional[int]
+    name: str
+
+
+class MessageIn(BaseModel):
+    message: str
+    category: int
+    parent_message_id: Optional[int]
+    recipient_id: Optional[int]
+    recipient_group_id: Optional[int]
+
+
+class Message(BaseModel):
+    id: int
+    message: str
+    category: int
+    sender_id: int
+    parent_message_id: Optional[int]
+    create_date: str
+    expiry_date: Optional[str]
+
+
+class MessageRecipient(BaseModel):
+    id: int
+    recipient_id: Optional[int]
+    recipient_group_id: Optional[int]
+    message_id: int
+    status: int
+
+
+class MessageRecipientIn(BaseModel):
+    recipient_id: Optional[int]
+    recipient_group_id: Optional[int]
+    message_id: int
