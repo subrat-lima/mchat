@@ -4,8 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 import mchat
-
-# from mchat.routes import auth, chat, contact, member, message, user
 from mchat.routes import admin, auth, chat
 
 app = FastAPI()
@@ -14,11 +12,7 @@ templates = Jinja2Templates(directory="mchat/templates")
 
 app.include_router(auth.router)
 app.include_router(admin.router)
-# app.include_router(user.router)
-# app.include_router(contact.router)
 app.include_router(chat.router)
-# app.include_router(member.router)
-# app.include_router(message.router)
 
 
 @app.get("/", response_class=HTMLResponse)

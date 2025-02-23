@@ -1,7 +1,14 @@
 from typing import Optional
 
 import mchat.helper as db
-from mchat.model import Chat, Message, MessageIn, MessageRecipient, MessageRecipientIn
+from mchat.model import (
+    Chat,
+    Message,
+    MessageIn,
+    MessageOut,
+    MessageRecipient,
+    MessageRecipientIn,
+)
 
 
 def add(curs, message_recipient: MessageRecipientIn) -> bool:
@@ -19,7 +26,7 @@ def add(curs, message_recipient: MessageRecipientIn) -> bool:
 
 def get_all_received_messages(curs, user_id: int) -> Optional[list[Chat]]:
     statement = """
-    SELECT *, username as name, sender_id as recipient_id FROM messages
+    SELECT sender_id as recipient_id, username as name, recipient_group_id, message, messages.create_date as message_create_date FROM messages
     INNER JOIN message_recipients ON messages.id = message_recipients.message_id
     INNER JOIN users ON messages.sender_id = users.id
     WHERE recipient_id = ?;
@@ -29,7 +36,7 @@ def get_all_received_messages(curs, user_id: int) -> Optional[list[Chat]]:
 
 def get_all_sent_messages(curs, user_id: int) -> Optional[list[Chat]]:
     statement = """
-    SELECT username as name, * FROM messages
+    SELECT recipient_id, username as name, recipient_group_id, message, messages.create_date as message_create_date FROM messages
     INNER JOIN message_recipients ON messages.id = message_recipients.message_id
     INNER JOIN users ON message_recipients.recipient_id = users.id
     WHERE sender_id = ?;

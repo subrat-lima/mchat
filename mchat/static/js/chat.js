@@ -1,5 +1,6 @@
 import { getToken, deleteToken, domElem, domText, domSet } from "./helper.js";
 import Home from "./home.js";
+import { Message } from "./message.js";
 
 export class Chat {
   constructor() {
@@ -21,10 +22,20 @@ export class Chat {
 
     let ul = domElem("ul");
     for (let chat of chats) {
-      let li = domElem("li", {
-        "data-recipient-id": chat["recipient_id"],
-        "data-recipient-group-id": chat["recipient_group_id"],
-      });
+      let chat_id = chat["recipient_id"];
+      let chat_type = "direct";
+      if (!chat_id) {
+        chat_id = chat["recipient_group_id"];
+        chat_type = "group";
+      }
+      let li = domElem(
+        "li",
+        {
+          "data-id": chat_id,
+          "data-type": chat_type,
+        },
+        { click: this.showMessages },
+      );
       let a = domElem("a");
       domSet(li, domText(chat["name"]));
       domSet(ul, li, false);
@@ -35,6 +46,13 @@ export class Chat {
 
   uiAddChat() {
     new AddChat();
+  }
+
+  showMessages(e) {
+    let elem = e.target;
+    let chat_id = elem.getAttribute("data-id");
+    let chat_type = elem.getAttribute("data-type");
+    new Message(chat_id, chat_type);
   }
 
   async apiGetChats() {

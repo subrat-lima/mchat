@@ -19,6 +19,11 @@ def get_by_group_and_user(curs, group_id: int, user_id: int) -> UserGroup | None
     return db.get(curs, statement, (group_id, user_id), UserGroup)
 
 
+def get_all_by_id(curs, group_id: int) -> Optional[list[UserGroup]]:
+    statement = """SELECT * FROM user_groups WHERE id = ?"""
+    return db.get_all(curs, statement, (group_id,), UserGroup)
+
+
 def get_all_by_user(curs, user_id: int) -> Optional[list[UserGroup]]:
     statement = """
     SELECT * FROM user_groups

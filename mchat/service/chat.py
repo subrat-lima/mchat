@@ -12,6 +12,7 @@ from mchat.model import (
     GroupIn,
     Message,
     MessageIn,
+    MessageOut,
     MessageRecipientIn,
     SuccessHandler,
     User,
@@ -53,17 +54,12 @@ def add_user_group(curs, user: User, in_user_group: UserGroupIn):
 @db_connect
 def add_message(curs, user: User, in_message: MessageIn):
     db_message = d_message.add(curs, user.id, in_message)
-    if in_message.recipient_id:
-        recipient = MessageRecipientIn(
-            recipient_id=in_message.recipient_id,
-            recipient_group_id=in_message.recipient_group_id,
-            message_id=db_message["id"],
-        )
-        d_message_recipient.add(curs, recipient)
-    else:
-        # TODO: add message script for group
-        pass
-
+    recipient = MessageRecipientIn(
+        recipient_id=in_message.recipient_id,
+        recipient_group_id=in_message.recipient_group_id,
+        message_id=db_message["id"],
+    )
+    d_message_recipient.add(curs, recipient)
     return SuccessHandler(detail="message added successfully")
 
 
@@ -83,4 +79,21 @@ def get_chats(curs, user: User) -> Optional[list[Chat]]:
     if db_sent_messages:
         for message in db_sent_messages:
             chats.append(message)
-    return chats
+    chats.sort(reverse=True)
+    return set(chats)
+
+
+@db_connect
+def get_messages(
+    curs, user: User, chat_type: str, chat_id: int
+) -> Optional[list[MessageOut]]:
+    messages = []
+    if chat_type == "direct":
+        db_messages = d_message.get_all_by_direct_chat_id(curs, user.id, chat_id)
+    elif chat_type == "group":
+        db_messages = d_message.get_all_by_group_chat_id(curs, chat_id)
+    if db_messages:
+        for message in db_messages:
+            messages.append(message)
+    messages.sort()
+    return messages
