@@ -1,4 +1,5 @@
 import { setToken, domElem, domText, domSet, showToast } from "./helper.js";
+import { Chat } from "./chat.js";
 
 export default class Login {
   constructor() {
@@ -52,7 +53,7 @@ export default class Login {
       setToken(token);
 
       showToast("user logged in successfully");
-      window.location.replace("/");
+      new Chat();
     } else {
       response = await response.json();
       showToast(response.detail, "error");

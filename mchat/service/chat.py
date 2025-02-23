@@ -71,13 +71,16 @@ def add_message(curs, user: User, in_message: MessageIn):
 def get_chats(curs, user: User) -> Optional[list[Chat]]:
     db_user_groups = d_user_group.get_all_by_user(curs, user.id)
     chats = []
-    for group in db_user_groups:
-        chat = Chat(recipient_id=None, recipient_group_id=group.id, name=group.name)
-        chats.append(chat)
+    if db_user_groups:
+        for group in db_user_groups:
+            chat = Chat(recipient_id=None, recipient_group_id=group.id, name=group.name)
+            chats.append(chat)
     db_received_messages = d_message_recipient.get_all_received_messages(curs, user.id)
-    for message in db_received_messages:
-        chats.append(message)
+    if db_received_messages:
+        for message in db_received_messages:
+            chats.append(message)
     db_sent_messages = d_message_recipient.get_all_sent_messages(curs, user.id)
-    for message in db_sent_messages:
-        chats.append(message)
+    if db_sent_messages:
+        for message in db_sent_messages:
+            chats.append(message)
     return chats

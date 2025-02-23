@@ -45,6 +45,14 @@ export function domSet(parent = null, children = [], clean = true) {
 }
 
 export function showToast(msg, category = "info") {
-  // TODO: add toast
-  console.log(`category: ${category}\nmsg: ${msg}`);
+  var x = document.getElementById("toast");
+  domSet(x, domText(msg));
+
+  x.classList.add("show");
+  x.classList.add(category);
+
+  setTimeout(() => {
+    x.classList.remove("show");
+    x.classList.remove(category);
+  }, 3000);
 }

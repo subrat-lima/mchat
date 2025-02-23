@@ -1,6 +1,6 @@
 [project]
 name = "mchat"
-version = "0.1.6"
+version = "0.1.7"
 description = "mchat is a micro chat application"
 readme = "README.md"
 requires-python = ">=3.13"
