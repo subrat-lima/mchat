@@ -9,7 +9,6 @@ export class Chat {
 
   async uiShow() {
     let chats = await this.apiGetChats();
-    console.log("chats: ", chats);
     if (!chats) {
       return;
     }
@@ -20,7 +19,7 @@ export class Chat {
     );
     domSet(button, domText("add chat"));
 
-    let ul = domElem("ul");
+    let section = domElem("section");
     for (let chat of chats) {
       let chat_id = chat["recipient_id"];
       let chat_type = "direct";
@@ -28,20 +27,21 @@ export class Chat {
         chat_id = chat["recipient_group_id"];
         chat_type = "group";
       }
-      let li = domElem(
-        "li",
+      let article = domElem(
+        "article",
         {
           "data-id": chat_id,
           "data-type": chat_type,
+          "data-name": chat["name"],
         },
         { click: this.showMessages },
       );
       let a = domElem("a");
-      domSet(li, domText(chat["name"]));
-      domSet(ul, li, false);
+      domSet(article, domText(chat["name"]));
+      domSet(section, article, false);
     }
 
-    domSet(null, [button, ul]);
+    domSet(null, [button, section]);
   }
 
   uiAddChat() {
@@ -52,7 +52,8 @@ export class Chat {
     let elem = e.target;
     let chat_id = elem.getAttribute("data-id");
     let chat_type = elem.getAttribute("data-type");
-    new Message(chat_id, chat_type);
+    let chat_name = elem.getAttribute("data-name");
+    new Message(chat_id, chat_type, chat_name);
   }
 
   async apiGetChats() {

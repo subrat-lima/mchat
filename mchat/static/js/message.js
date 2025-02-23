@@ -1,34 +1,112 @@
-import { getToken, deleteToken, domElem, domText, domSet } from "./helper.js";
+import {
+  getToken,
+  getDisplayDate,
+  deleteToken,
+  domElem,
+  domText,
+  domSet,
+  getUser,
+  showToast,
+} from "./helper.js";
 import Home from "./home.js";
+import { Chat } from "./chat.js";
 
 export class Message {
-  constructor(id, type) {
-    this.ui(id, type);
+  constructor(id, type, chat_name) {
+    this.ui(id, type, chat_name);
   }
 
-  async ui(id, type) {
+  async ui(id, type, chat_name) {
+    let user = getUser();
     let messages = await this.apiGetMessages(id, type);
     console.log("messages: ", messages);
     if (!messages) {
       return;
     }
-    let ul = domElem("ul");
+    let section = domElem("section");
     for (let message of messages) {
-      let li = domElem("li", {
+      let article = domElem("article", {
         "data-id": message["id"],
         "data-sender-id": message["sender_id"],
       });
-      let msg = domElem("p");
+      let is_me = user == message["sender_name"];
+      article.classList.add("message");
+      if (is_me) {
+        article.classList.add("right");
+      } else {
+        article.classList.add("left");
+      }
+      let msg = domElem("span");
       domSet(msg, domText(message["message"]));
-      let date = domElem("p");
-      domSet(date, domText(message["create_date"]));
-      let sender = domElem("p");
-      domSet(sender, domText(message["sender_name"]));
-      domSet(li, [msg, date, sender]);
-      domSet(ul, li, false);
+      msg.classList.add("text");
+      let date = domElem("small");
+      date.classList.add("date");
+      date.classList.add("right");
+      domSet(date, domText(getDisplayDate(message["create_date"])));
+      domSet(article, [msg, date]);
+      domSet(section, article, false);
     }
 
-    domSet(null, [ul]);
+    let form = domElem(
+      "form",
+      { "data-id": id, "data-type": type, "data-name": chat_name },
+      { submit: this.apiSendMessage },
+    );
+    let fieldset = domElem("fieldset", { role: "group" });
+    let text = domElem("input", {
+      type: "text",
+      name: "message",
+      placeholder: "message",
+    });
+    let submit = domElem("input", { type: "submit", value: "send" });
+    domSet(fieldset, [text, submit]);
+    domSet(form, fieldset);
+
+    let header = domElem("article");
+    let back_button = domElem("span", {}, { click: this.goBack });
+    back_button.classList.add("back-btn");
+    back_button.innerHTML = "&#8592;";
+    let header_text = domElem("strong");
+    domSet(header_text, domText(chat_name));
+
+    //header.classList.add("chat-head");
+    domSet(header, [back_button, header_text]);
+    domSet(null, [header, section, form]);
+  }
+
+  async goBack() {
+    new Chat();
+  }
+
+  async apiSendMessage(e) {
+    e.preventDefault();
+    let token = getToken();
+    let elem = e.target;
+    let chat_id = elem.getAttribute("data-id");
+    let chat_type = elem.getAttribute("data-type");
+    let chat_name = elem.getAttribute("data-name");
+    let message = {
+      message: elem.message.value,
+      category: 0,
+      parent_message_id: null,
+      recipient_id: chat_id,
+      recipient_group_id: null,
+    };
+    let response = await fetch(`/chats/messages/`, {
+      method: "POST",
+      body: JSON.stringify(message),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status == 200) {
+      showToast("message sent");
+      new Message(chat_id, chat_type, chat_name);
+    } else if (response.status == 401) {
+      response = await response.json();
+      showToast(response.detail, "error");
+    }
   }
 
   async apiGetMessages(id, type) {

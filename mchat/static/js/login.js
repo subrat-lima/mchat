@@ -1,4 +1,11 @@
-import { setToken, domElem, domText, domSet, showToast } from "./helper.js";
+import {
+  setToken,
+  setUser,
+  domElem,
+  domText,
+  domSet,
+  showToast,
+} from "./helper.js";
 import { Chat } from "./chat.js";
 
 export default class Login {
@@ -51,6 +58,7 @@ export default class Login {
       response = await response.json();
       let token = response["access_token"];
       setToken(token);
+      setUser(form.username.value);
 
       showToast("user logged in successfully");
       new Chat();
