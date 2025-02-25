@@ -5,6 +5,7 @@ from fastapi import HTTPException
 import mchat.data.group as d_group
 import mchat.data.message as d_message
 import mchat.data.message_recipient as d_message_recipient
+import mchat.data.user as d_user
 import mchat.data.user_group as d_user_group
 from mchat.helper import db_connect
 from mchat.model import (
@@ -18,6 +19,11 @@ from mchat.model import (
     User,
     UserGroupIn,
 )
+
+
+@db_connect
+def get_user(curs, id: int):
+    return d_user.get(curs, id)
 
 
 @db_connect
@@ -60,9 +66,7 @@ def add_message(curs, user: User, in_message: MessageIn):
         message_id=db_message["id"],
     )
     d_message_recipient.add(curs, recipient)
-    return SuccessHandler(
-        detail="message added successfully", data={"id": db_message["id"]}
-    )
+    return {"id": db_message["id"]}
 
 
 @db_connect
@@ -86,6 +90,15 @@ def get_chats(curs, user: User) -> Optional[list[Chat]]:
 
 
 @db_connect
+def get_chat_name(curs, user_id, receiver_id, chat_type):
+    if chat_type == "group":
+        name = d_group.get(curs, receiver_id).name
+    else:
+        name = d_user.get(curs, receiver_id).username
+    return name
+
+
+@db_connect
 def get_messages(
     curs, user: User, chat_type: str, chat_id: int
 ) -> Optional[list[MessageOut]]:
@@ -99,3 +112,8 @@ def get_messages(
             messages.append(message)
     messages.sort()
     return messages
+
+
+@db_connect
+def get_message(curs, message_id):
+    return d_message.get(curs, message_id)

@@ -11,6 +11,10 @@ li {
   list-style: none !important;
 }
 
+.hide {
+  display: none;
+}
+
 .back-btn {
   margin: 0 1rem;
   font-weight: bold;

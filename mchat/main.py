@@ -16,9 +16,9 @@ app.include_router(admin.router)
 app.include_router(chat.router)
 
 
-@app.websocket("/ws/{username}")
-async def websocket_endpoint(websocket: WebSocket, username: str):
-    await websocket_handler(websocket, username)
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket_handler(websocket)
 
 
 @app.get("/", response_class=HTMLResponse)

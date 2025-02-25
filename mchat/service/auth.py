@@ -44,6 +44,11 @@ def get_user_from_token(curs, token) -> User:
 
 
 def get_user(token):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
         payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
         username = payload.get("sub")
