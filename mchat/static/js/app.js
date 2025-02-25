@@ -1,17 +1,40 @@
 import Home from "./home.js";
-import Contact from "./contact.js";
 import { Chat } from "./chat.js";
-import { getToken, deleteToken } from "./helper.js";
+import Socket from "./socket.js";
+import { sleep, getUser, getToken, deleteToken, showToast } from "./helper.js";
 
 async function init() {
   let token = getToken();
+  let socket = new Socket();
+  console.log("socket: ", socket);
   if (token) {
-    new Chat();
+    console.log("socket: ", socket);
+    new Chat(socket);
     console.log("chat view");
   } else {
     console.log("home view");
-    new Home();
+    console.log("socket: ", socket);
+    new Home(socket);
   }
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+//let user = getUser();
+//let token = getToken();
+//let ws = new WebSocket(`/ws/${user}`);
+//
+//ws.addEventListener("open", (e) => {
+//  ws.onmessage = function (event) {
+//    showToast(event.data);
+//    console.log("onmessage.data: ", event.data);
+//  };
+//
+//  function sendMessage() {
+//    ws.send("hello world");
+//    console.log("send data");
+//  }
+//
+//  sleep(5000);
+//  sendMessage();
+//});

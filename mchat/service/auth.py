@@ -43,6 +43,21 @@ def get_user_from_token(curs, token) -> User:
     return d_user.get_by_username(curs, token.username)
 
 
+def get_user(token):
+    try:
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    db_user = get_user_from_token(token_data)
+    if not db_user:
+        raise credentials_exception
+    return db_user
+
+
 def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> User:

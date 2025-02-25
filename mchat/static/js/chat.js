@@ -3,11 +3,15 @@ import Home from "./home.js";
 import { Message } from "./message.js";
 
 export class Chat {
-  constructor() {
+  constructor(socket) {
+    this.socket = socket;
     this.uiShow();
+    console.log("socket: ", socket);
+    console.log("this.socket: ", this.socket);
   }
 
   async uiShow() {
+    console.log("this.socket: ", this.socket);
     let chats = await this.apiGetChats();
     if (!chats) {
       return;
@@ -15,7 +19,11 @@ export class Chat {
     let button = domElem(
       "button",
       { class: "container" },
-      { click: this.uiAddChat },
+      {
+        click: () => {
+          this.uiAddChat();
+        },
+      },
     );
     domSet(button, domText("add chat"));
 
@@ -34,7 +42,11 @@ export class Chat {
           "data-type": chat_type,
           "data-name": chat["name"],
         },
-        { click: this.showMessages },
+        {
+          click: (e) => {
+            this.showMessages(e);
+          },
+        },
       );
       let a = domElem("a");
       domSet(article, domText(chat["name"]));
@@ -45,7 +57,8 @@ export class Chat {
   }
 
   uiAddChat() {
-    new AddChat();
+    console.log("this.socket: ", this.socket);
+    new AddChat(this.socket);
   }
 
   showMessages(e) {
@@ -53,10 +66,12 @@ export class Chat {
     let chat_id = elem.getAttribute("data-id");
     let chat_type = elem.getAttribute("data-type");
     let chat_name = elem.getAttribute("data-name");
-    new Message(chat_id, chat_type, chat_name);
+    console.log("this.socket: ", this.socket);
+    new Message(chat_id, chat_type, chat_name, this.socket);
   }
 
   async apiGetChats() {
+    console.log("this.socket: ", this.socket);
     let token = getToken();
     let response = await fetch("/chats/", {
       headers: {

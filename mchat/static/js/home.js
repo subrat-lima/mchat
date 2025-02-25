@@ -3,7 +3,7 @@ import Login from "./login.js";
 import Register from "./register.js";
 
 export default class Home {
-  constructor() {
+  constructor(socket = null) {
     this.uiShow();
   }
 

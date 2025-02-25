@@ -32,6 +32,28 @@ def get_all(curs) -> Optional[list[Message]]:
     return db.get_all(curs, statement, None, Message)
 
 
+def get(curs, id: int) -> Optional[MessageOut]:
+    statement = """
+    SELECT
+        messages.id as id, 
+        message,
+        sender_id,
+        messages.create_date as create_date,
+        username as sender_name
+    FROM
+        messages
+    INNER JOIN
+        message_recipients ON
+        message_recipients.message_id = messages.id
+    INNER JOIN
+        users ON
+        users.id = messages.sender_id
+    WHERE
+        messages.id = ?
+    """
+    return db.get(curs, statement, (id,), MessageOut)
+
+
 def get_all_by_direct_chat_id(
     curs, user_id: int, contact_id: int
 ) -> Optional[list[MessageOut]]:

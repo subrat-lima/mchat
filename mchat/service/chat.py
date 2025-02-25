@@ -60,7 +60,9 @@ def add_message(curs, user: User, in_message: MessageIn):
         message_id=db_message["id"],
     )
     d_message_recipient.add(curs, recipient)
-    return SuccessHandler(detail="message added successfully")
+    return SuccessHandler(
+        detail="message added successfully", data={"id": db_message["id"]}
+    )
 
 
 @db_connect
