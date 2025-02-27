@@ -27,6 +27,11 @@ def get_user(curs, id: int):
 
 
 @db_connect
+def get_user_by_username(curs, username: str):
+    return d_user.get_by_username(curs, username)
+
+
+@db_connect
 def add_group(curs, user: User, in_group: GroupIn):
     db_group = d_group.get_by_owner_and_name(curs, user.id, in_group.name)
     if db_group:

@@ -1,8 +1,9 @@
 import dom from "./dom.js";
-import { getDisplayDate } from "./helper.js";
+import { getDisplayDate, get } from "./helper.js";
+import handler from "./handler.js";
 
 let ui = (function () {
-  function register(handler) {
+  function register() {
     let section = dom.elem("section", { cls: "auth" });
     let header = dom.elem("div", { cls: "header" });
     let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
@@ -25,7 +26,7 @@ let ui = (function () {
     dom.set(null, section);
   }
 
-  function login(handler) {
+  function login() {
     let section = dom.elem("section", { cls: "auth" });
     let header = dom.elem("div", { cls: "header" });
     let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
@@ -48,8 +49,52 @@ let ui = (function () {
     dom.set(null, section);
   }
 
-  function chatList(chats, chatHandler) {
+  function addChat() {
+    console.log("inside addchat");
+    let dialog = dom.elem("dialog", { open: true });
+    let article = dom.elem("article");
+    let header = dom.elem("p");
+    let button = dom.elem(
+      "button",
+      { "aria-label": "Close", rel: "prev", cls: "close" },
+      {
+        click: (e) => {
+          dialog.remove();
+        },
+      },
+    );
+
+    let inputs = [{ name: "username" }];
+    let form = dom.form("new chat", inputs, handler.apiAddChat);
+
+    dom.set(header, button);
+    dom.set(article, [header, form]);
+    dom.set(dialog, article);
+    dom.set(null, dialog, false);
+  }
+
+  function chatList(chats) {
     let section = dom.elem("section", { cls: "chat" });
+    let article = dom.elem("article", { cls: "header" });
+    let header = dom.elem("div");
+    let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
+    let header_text = dom.elem("strong");
+    let button_div = dom.elem("div");
+    let button_1 = dom.elem("button", {}, { click: handler.loadAddChat });
+    let button_2 = dom.elem(
+      "button",
+      { cls: "secondary" },
+      { click: handler.logout },
+    );
+    let chat_div = dom.elem("div", { cls: "list" });
+    dom.set(button_1, dom.text("add"));
+    dom.set(button_2, dom.text("logout"));
+    dom.set(header_text, dom.text("mchat"));
+    dom.set(header, [logo, header_text]);
+    dom.set(button_div, [button_1, button_2]);
+    dom.set(article, [header, button_div]);
+    dom.set(section, [article, chat_div]);
+
     for (let chat of chats) {
       console.log("chat: ", chat);
       let receiver_id = chat["recipient_id"];
@@ -66,18 +111,19 @@ let ui = (function () {
           "data-id": receiver_id,
           "data-type": type,
           "data-name": name,
+          cls: "pointer",
         },
-        { click: chatHandler },
+        { click: handler.apiOpenChat },
       );
       dom.set(article, dom.text(name));
-      dom.set(section, article, false);
+      dom.set(chat_div, article, false);
     }
-    dom.set(null, [section]);
-    console.log("chatlist ui loaded");
+    dom.set(null, section);
   }
 
-  function messageAdd(msg, current_user) {
+  function messageAdd(msg) {
     //let { id, sender_id, sender_name, data, type, create_date } = msg;
+    let current_user = get("username");
     let { id, sender_id, parent_id, sender_name, message, type, create_date } =
       msg;
     let section = document.getElementById("messages");
@@ -100,16 +146,21 @@ let ui = (function () {
     console.log("added message");
   }
 
-  function messageList(messages, chat, sendMessageHandler, backHandler) {
-    let { current_user, receiver_id, type, name } = chat;
+  function messageList(chat, messages) {
+    let { receiver_id, type, name } = chat;
+    let main_div = dom.elem("div", { cls: "main-chat" });
     let nav = dom.elem("article");
-    let button = dom.elem("span", { cls: "back-btn" }, { click: backHandler });
+    let button = dom.elem(
+      "span",
+      { cls: "back-btn pointer" },
+      { click: handler.loadChat },
+    );
     let header = dom.elem("strong");
-    let section = dom.elem("section", { id: "messages" });
+    let section = dom.elem("section", { id: "messages", cls: "list" });
     let form = dom.elem(
       "form",
-      { "data-type": type, "data-id": receiver_id },
-      { submit: sendMessageHandler },
+      { "data-type": type, "data-id": receiver_id, cls: "search-form" },
+      { submit: handler.apiSendMessage },
     );
     let fieldset = dom.elem("fieldset", { role: "group" });
     let input = dom.input("message", "text", null, false);
@@ -123,10 +174,11 @@ let ui = (function () {
     dom.set(fieldset, [input, input_hidden, submit]);
     dom.set(form, fieldset);
 
-    dom.set(null, [nav, section, form]);
+    dom.set(main_div, [nav, section, form]);
+    dom.set(null, main_div);
     for (let msg of messages) {
       console.log("msg: ", msg);
-      messageAdd(msg, chat.current_user);
+      messageAdd(msg);
     }
   }
 
@@ -157,6 +209,7 @@ let ui = (function () {
     messageList: messageList,
     loader: loader,
     showToast: showToast,
+    addChat: addChat,
   };
 })();
 

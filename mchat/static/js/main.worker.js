@@ -1,8 +1,8 @@
 import handler from "./handler.js";
-import { getToken, sleep } from "./helper.js";
+import { get, sleep } from "./helper.js";
 
 let worker = (async function () {
-  if (!getToken()) {
+  if (!get("token")) {
     return {};
   }
   let worker = new SharedWorker("/static/js/worker.js");
@@ -52,7 +52,7 @@ let worker = (async function () {
     }
   }
 
-  let token = getToken();
+  let token = get("token");
   await sleep(2000);
   await postMessageToWSServer({ action: "token", token: token });
 

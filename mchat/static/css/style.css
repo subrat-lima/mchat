@@ -1,9 +1,19 @@
+body {
+  overflow: hidden;
+}
+
 legend {
   text-align: center;
   font-weight: bold;
 }
 
-.auth {
+button {
+  margin: auto 0.25rem;
+}
+
+.auth,
+.chat,
+.main-chat {
   width: 90%;
   max-width: 500px;
   margin: 0 auto;
@@ -14,7 +24,11 @@ legend {
   margin-right: 1rem;
 }
 
-.header {
+.pointer {
+  cursor: pointer;
+}
+
+.auth .header {
   font-size: 2rem;
   text-align: center;
   margin: 2rem auto;
@@ -23,6 +37,32 @@ legend {
 .footer {
   text-align: center;
   margin-top: 2rem;
+}
+
+.close {
+  margin-top: 0.25rem !important;
+}
+
+.chat .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.main-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.list {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.search-form {
+  margin-bottom: 1rem;
 }
 
 ul {
@@ -70,10 +110,6 @@ li {
 .text {
   flex: 1;
   text-align: left;
-}
-
-.date {
-  /*text-align: right;*/
 }
 
 #toast {

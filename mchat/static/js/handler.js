@@ -1,7 +1,7 @@
 import dom from "./dom.js";
 import ui from "./ui.js";
 import api from "./api.js";
-import { sleep, getToken, setToken, deleteToken } from "./helper.js";
+import { sleep, get, set, del } from "./helper.js";
 import worker from "./main.worker.js";
 
 let handler = (function () {
@@ -13,6 +13,8 @@ let handler = (function () {
     } else if (name == "chatList") {
       ui.loader("chat");
       wsChatList();
+    } else if (name == "addChat") {
+      ui.addChat();
     }
   }
 
@@ -34,7 +36,7 @@ let handler = (function () {
     console.log("token: ", token);
     if (token) {
       ui.showToast("login successful", "info");
-      setToken(token);
+      set("token", token);
       location.reload();
     } else {
       ui.showToast(response.detail, "error");
@@ -57,14 +59,12 @@ let handler = (function () {
 
   async function apiOpenChat(e) {
     e.preventDefault();
+    console.log("open chat");
     ui.loader("messages");
     let article = e.target;
     let receiver_id = article.dataset.id;
     let type = article.dataset.type;
     let name = article.dataset.name;
-    // TODO: add remaining info for chat
-    await sleep(1000);
-    console.log("worker: ", await worker);
     let wr = await worker;
     await wr.send({
       action: "open-chat",
@@ -75,10 +75,6 @@ let handler = (function () {
 
   async function wsChatList() {
     let wr = await worker;
-    console.log("worker: ", await worker);
-    console.log("send: ", await worker.send);
-    console.log("wr send: ", await wr.send);
-
     await wr.send({ action: "get-chat-list" });
   }
 
@@ -89,30 +85,36 @@ let handler = (function () {
   }
 
   async function messageFromPort(j_data) {
-    console.log(`msg for user with id`);
-    console.log(j_data);
     let data = j_data["data"];
     let action = data["action"];
     if (action == "get-chat-list") {
-      console.log("actioned");
-      ui.chatList(data["data"], apiOpenChat);
+      ui.chatList(data["data"], handler);
     } else if (action == "open-chat") {
-      ui.messageList(
-        data["data"],
-        data["chat"],
-        apiSendMessage,
-        backToChatView,
-      );
+      ui.messageList(data["chat"], data["data"]);
     } else if (action == "send-message") {
       console.log("in send-message");
       console.log(data);
       ui.messageAdd(data["data"], data["current_user"]);
     } else if (action == "token") {
-      console.log("token-response: ", data);
-      if (data["status"] == "failed") {
-        deleteToken();
-        view("login");
-      }
+      await wsTokenResponse(data);
+    } else if (action == "add-chat") {
+      await wsOpenChat(data["data"]);
+    }
+  }
+
+  async function wsOpenChat(chat, messages = []) {
+    console.log("chat: ", chat);
+    ui.messageList(chat, messages);
+  }
+
+  async function wsTokenResponse(resp) {
+    if (resp["status"] == "failed") {
+      del(["token", "username", "id"]);
+      view("login");
+    } else {
+      let { username, id } = resp["data"];
+      set("username", username);
+      set("id", id);
     }
   }
 
@@ -136,12 +138,40 @@ let handler = (function () {
   }
 
   function init() {
-    let token = getToken();
+    let token = get("token");
     if (token) {
       view("chatList");
     } else {
       view("login");
     }
+  }
+
+  function loadAddChat(e) {
+    e.preventDefault();
+    console.log("load chat");
+    view("addChat");
+  }
+
+  async function apiAddChat(e) {
+    e.preventDefault();
+    let username = e.target.username.value;
+    let wr = await worker;
+    await wr.send({ action: "add-chat", data: { username: username } });
+
+    console.log("api add chat");
+  }
+
+  async function loadChat(e) {
+    e.preventDefault();
+    view("chatList");
+  }
+
+  function logout(e) {
+    e.preventDefault();
+    del(["token", "username", "id"]);
+    location.reload();
+    console.log("logout successful");
+    ui.showToast("logout successfully");
   }
 
   return {
@@ -152,10 +182,13 @@ let handler = (function () {
     loadRegister: loadRegister,
     loadLogin: loadLogin,
     apiLogin: apiLogin,
+    apiSendMessage: apiSendMessage,
     apiRegister: apiRegister,
-    //login: login,
-    //register: register,
-    //openChat: openChat,
+    apiAddChat: apiAddChat,
+    loadAddChat: loadAddChat,
+    loadChat: loadChat,
+    apiOpenChat: apiOpenChat,
+    logout: logout,
   };
 })();
 

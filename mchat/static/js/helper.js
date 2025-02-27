@@ -1,13 +1,13 @@
-export function getToken() {
-  return localStorage.getItem("mchat-token");
+export function get(key) {
+  return localStorage.getItem(`mchat-${key}`);
 }
 
-export function setToken(token) {
-  localStorage.setItem("mchat-token", token);
+export function set(key, value) {
+  localStorage.setItem(`mchat-${key}`, value);
 }
 
-export function deleteToken() {
-  localStorage.removeItem("mchat-token");
+export function del(keys = []) {
+  for (let key of [...keys]) localStorage.removeItem(`mchat-${key}`);
 }
 
 export function sleep(ms) {

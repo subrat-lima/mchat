@@ -120,6 +120,23 @@ async def handleRequest(user, websocket, data):
         await manager.send_message_to_chat(
             recipient_resp, [recipient.username], websocket
         )
+    elif action == "add-chat":
+        print("data:", data)
+        recipient_username = data["data"]["username"]
+        print("recipient_username: ", recipient_username)
+        recipient = s_chat.get_user_by_username(recipient_username)
+        await websocket.send_json(
+            {
+                "action": action,
+                "from": data["from"],
+                "status": "ok",
+                "data": {
+                    "receiver_id": recipient.id,
+                    "name": recipient.username,
+                    "type": "direct",
+                },
+            }
+        )
 
 
 async def websocket_handler(websocket: WebSocket):
@@ -133,7 +150,7 @@ async def websocket_handler(websocket: WebSocket):
                 "action": "token",
                 "from": j_data["data"]["from"],
                 "status": "ok",
-                "data": "successful",
+                "data": {"username": user.username, "id": user.id},
             }
         )
     except Exception:
