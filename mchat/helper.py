@@ -29,6 +29,19 @@ def db_connect(func):
     return _db_connect
 
 
+def one(curs, statement, data):
+    curs.execute(statement, data)
+    return curs.fetchone()
+
+
+def all(curs, statement, data=None):
+    if data is None:
+        curs.execute(statement)
+    else:
+        curs.execute(statement, data)
+    return curs.fetchall()
+
+
 def add(curs, statement, data):
     curs.execute(statement, data)
     row = curs.fetchone()

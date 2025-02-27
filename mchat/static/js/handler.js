@@ -88,7 +88,7 @@ let handler = (function () {
     let data = j_data["data"];
     let action = data["action"];
     if (action == "get-chat-list") {
-      ui.chatList(data["data"], handler);
+      ui.chatList(data["chats"]);
     } else if (action == "open-chat") {
       ui.messageList(data["chat"], data["data"]);
     } else if (action == "send-message") {

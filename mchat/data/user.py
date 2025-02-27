@@ -1,22 +1,24 @@
+from typing import Optional
+
 import mchat.helper as db
 from mchat.model import User, UserIn
 
 
-def add(curs, user: UserIn) -> bool:
-    statement = """INSERT INTO users (username, password) VALUES(?, ?) RETURNING id"""
-    return db.add(curs, statement, (user.username, user.password))
+def add(curs, user: UserIn):
+    statement = """INSERT INTO users (username, password) VALUES(:username, :password) RETURNING *"""
+    return db.one(curs, statement, user.dict())
 
 
-def get(curs, id: int) -> User | None:
-    statement = """SELECT * FROM users WHERE id = ?"""
-    return db.get(curs, statement, (id,), User)
+def get(curs, id: int):
+    statement = """SELECT * FROM users WHERE id = :id"""
+    return db.one(curs, statement, (id,))
 
 
-def get_by_username(curs, username: str) -> User | None:
+def get_by_username(curs, username: str):
     statement = """SELECT * FROM users WHERE username = ?"""
-    return db.get(curs, statement, (username,), User)
+    return db.one(curs, statement, (username,))
 
 
-def get_all(curs) -> list[User] | None:
+def get_all(curs):
     statement = """SELECT * FROM users"""
-    return db.get_all(curs, statement, None, User)
+    return db.all(curs, statement)

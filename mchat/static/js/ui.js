@@ -74,6 +74,7 @@ let ui = (function () {
   }
 
   function chatList(chats) {
+    console.log("chats: ", chats);
     let section = dom.elem("section", { cls: "chat" });
     let article = dom.elem("article", { cls: "header" });
     let header = dom.elem("div");
@@ -83,7 +84,7 @@ let ui = (function () {
     let button_1 = dom.elem("button", {}, { click: handler.loadAddChat });
     let button_2 = dom.elem(
       "button",
-      { cls: "secondary" },
+      { cls: "outline secondary" },
       { click: handler.logout },
     );
     let chat_div = dom.elem("div", { cls: "list" });
@@ -96,26 +97,34 @@ let ui = (function () {
     dom.set(section, [article, chat_div]);
 
     for (let chat of chats) {
-      console.log("chat: ", chat);
-      let receiver_id = chat["recipient_id"];
-      let type = "direct";
-      let name = chat["name"];
-      if (!receiver_id) {
-        receiver_id = chat["recipient_group_id"];
-        type = "group";
+      let me = get("username");
+      let chat_id = chat["receiver_id"];
+      let chat_name = chat["receiver_username"];
+      let sender_name = chat["sender_username"];
+      if (me == chat_name) {
+        chat_id = chat["sender_id"];
+        chat_name = chat["sender_username"];
+      }
+
+      if (me == sender_name) {
+        sender_name = "me";
       }
 
       let article = dom.elem(
         "article",
         {
-          "data-id": receiver_id,
-          "data-type": type,
-          "data-name": name,
+          "data-id": chat_id,
+          "data-name": chat_name,
           cls: "pointer",
         },
         { click: handler.apiOpenChat },
       );
-      dom.set(article, dom.text(name));
+      let span = dom.elem("div");
+      let small = dom.elem("small");
+
+      dom.set(span, dom.text(chat_name));
+      dom.set(small, dom.text(`${sender_name}: ${chat["data"]}`));
+      dom.set(article, [span, small]);
       dom.set(chat_div, article, false);
     }
     dom.set(null, section);

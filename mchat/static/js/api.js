@@ -22,10 +22,11 @@ let api = (function () {
   }
 
   async function login(username, password) {
-    let body = new FormData();
-    body.append("username", username);
-    body.append("password", password);
-    return await post("/login", body);
+    let body = {
+      username: username,
+      password: password,
+    };
+    return await post("/login", body, "json");
   }
 
   return {

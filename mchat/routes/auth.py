@@ -1,8 +1,8 @@
 from fastapi import APIRouter
+from fastapi.security import HTTPBasicCredentials
 
 import mchat.service.auth as service
-from mchat.model import SuccessHandler, Token, User, UserIn
-from mchat.service.auth import LoginUserForm
+from mchat.model import Token, User, UserIn
 
 router = APIRouter()
 
@@ -13,5 +13,5 @@ async def register(user: UserIn):
 
 
 @router.post("/login")
-async def login(user: LoginUserForm) -> Token:
+async def login(user: HTTPBasicCredentials) -> Token:
     return service.login(user)

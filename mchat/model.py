@@ -3,12 +3,6 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class SuccessHandler(BaseModel):
-    status_code: int = 200
-    detail: str
-    data: Optional[dict] = {}
-
-
 class User(BaseModel):
     id: int
     username: str
@@ -31,49 +25,15 @@ class TokenData(BaseModel):
     username: str
 
 
-class GroupIn(BaseModel):
-    name: str
-
-
-class Group(BaseModel):
-    id: int
-    name: str
-    owner_id: int
-    create_date: str
-    is_active: int
-
-
-class UserGroupIn(BaseModel):
-    group_id: int
-    user_id: int
-    role: int = 0
-
-
-class UserGroup(BaseModel):
-    id: int
-    user_id: int
-    group_id: int
-    role: int
-    create_date: str
-    is_active: int
-    name: str
-
-
 class Chat(BaseModel):
     recipient_id: Optional[int] = None
-    recipient_group_id: Optional[int] = None
     name: str
     message: Optional[str] = None
     message_create_date: Optional[str] = None
 
     def __hash__(self):
         recipient_id = self.recipient_id
-        recipient_group_id = self.recipient_group_id
-        if recipient_id is None:
-            recipient_id = 0
-        if recipient_group_id is None:
-            recipient_group_id = 0
-        data = hash(f"{recipient_id}-{recipient_group_id}")
+        data = hash(f"{recipient_id}")
         return data
 
     def __eq__(self, other):
@@ -111,20 +71,6 @@ class Message(BaseModel):
     expiry_date: Optional[str] = None
 
 
-class MessageRecipient(BaseModel):
-    id: int
-    recipient_id: Optional[int] = None
-    recipient_group_id: Optional[int] = None
-    message_id: int
-    status: int = 0
-
-
-class MessageRecipientIn(BaseModel):
-    recipient_id: Optional[int] = None
-    recipient_group_id: Optional[int] = None
-    message_id: int
-
-
 class MessageOut(BaseModel):
     id: int
     group_id: Optional[int] = None
@@ -155,7 +101,3 @@ class MessageOut(BaseModel):
 
     def __lt__(self, other):
         return self.create_date < other.create_date
-
-
-class GroupMessageOut(MessageOut):
-    chat_type: str = "group"
