@@ -16,13 +16,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 @db_connect
-def register(curs, in_user: UserIn) -> SuccessHandler:
+def register(curs, in_user: UserIn):
     db_user = d_user.get_by_username(curs, in_user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="user already exists")
     in_user.password = hash_password(in_user.password)
     d_user.add(curs, in_user)
-    return SuccessHandler(detail="user registered successfully")
+    return {"status": 200, "message": "user registered"}
 
 
 @db_connect

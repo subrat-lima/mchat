@@ -55,7 +55,11 @@ let dom = (function () {
   }
 
   function form(name, inputs, handler) {
-    let form = elem("form", {}, { submit: handler });
+    let form = elem(
+      "form",
+      { method: "post", action: "#" },
+      { submit: handler },
+    );
     let legend = elem("legend");
     let fieldset = elem("fieldset");
     let submit = elem("input", { type: "submit", value: name });

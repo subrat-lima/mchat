@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 @router.post("/register")
-async def register(user: UserIn) -> SuccessHandler:
+async def register(user: UserIn):
     return service.register(user)
 
 

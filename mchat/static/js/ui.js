@@ -2,28 +2,54 @@ import dom from "./dom.js";
 import { getDisplayDate } from "./helper.js";
 
 let ui = (function () {
-  function home(openLoginHandler, openRegisterHandler) {
-    let login = dom.link(
-      "#login",
-      "login to start using app",
-      openLoginHandler,
-    );
-    let register = dom.link(
-      "#register",
-      "register if you dont have an account",
-      openRegisterHandler,
-    );
-    dom.set(null, [login, dom.elem("br"), register]);
+  function register(handler) {
+    let section = dom.elem("section", { cls: "auth" });
+    let header = dom.elem("div", { cls: "header" });
+    let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
+    let header_text = dom.elem("strong");
+
+    let article = dom.elem("article");
+    let inputs = [{ name: "username" }, { name: "password", type: "password" }];
+    let form = dom.form("register", inputs, handler.apiRegister);
+
+    let footer = dom.elem("footer", { cls: "footer" });
+    let footer_text = dom.elem("p");
+    let a = dom.link("#login", "login", handler.loadLogin);
+
+    dom.set(header_text, dom.text("mchat"));
+    dom.set(header, [logo, header_text]);
+    dom.set(article, form);
+    dom.set(footer_text, [dom.text("Already have an account ? "), a]);
+    dom.set(footer, footer_text);
+    dom.set(section, [header, article, footer]);
+    dom.set(null, section);
   }
 
-  function auth(action, submitHandler) {
+  function login(handler) {
+    let section = dom.elem("section", { cls: "auth" });
+    let header = dom.elem("div", { cls: "header" });
+    let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
+    let header_text = dom.elem("strong");
+
+    let article = dom.elem("article");
     let inputs = [{ name: "username" }, { name: "password", type: "password" }];
-    let form = dom.form(action, inputs, submitHandler);
-    dom.set(null, form);
+    let form = dom.form("login", inputs, handler.apiLogin);
+
+    let footer = dom.elem("footer", { cls: "footer" });
+    let footer_text = dom.elem("p");
+    let a = dom.link("#register", "register now", handler.loadRegister);
+
+    dom.set(header_text, dom.text("mchat"));
+    dom.set(header, [logo, header_text]);
+    dom.set(article, form);
+    dom.set(footer_text, [dom.text("Don't have an account ? "), a]);
+    dom.set(footer, footer_text);
+    dom.set(section, [header, article, footer]);
+    dom.set(null, section);
   }
 
   function chatList(chats, chatHandler) {
-    let section = dom.elem("section");
+    let section = dom.elem("section", { cls: "chat" });
     for (let chat of chats) {
       console.log("chat: ", chat);
       let receiver_id = chat["recipient_id"];
@@ -124,8 +150,8 @@ let ui = (function () {
   }
 
   return {
-    auth: auth,
-    home: home,
+    login: login,
+    register: register,
     chatList: chatList,
     messageAdd: messageAdd,
     messageList: messageList,

@@ -6,24 +6,22 @@ import worker from "./main.worker.js";
 
 let handler = (function () {
   function view(name) {
-    if (name == "home") {
-      ui.home(openLogin, openRegister);
-    } else if (name == "login") {
-      ui.auth("login", apiLogin);
+    if (name == "login") {
+      ui.login(handler);
     } else if (name == "register") {
-      ui.auth("register", apiRegister);
+      ui.register(handler);
     } else if (name == "chatList") {
       ui.loader("chat");
       wsChatList();
     }
   }
 
-  async function openLogin(e) {
+  async function loadLogin(e) {
     e.preventDefault();
     view("login");
   }
 
-  async function openRegister(e) {
+  async function loadRegister(e) {
     e.preventDefault();
     view("register");
   }
@@ -48,11 +46,12 @@ let handler = (function () {
     let form = e.target;
     let response = await api.register(form.username.value, form.password.value);
     let error = response.detail;
-    if (error) {
-      ui.showToast(error, "error");
+    let message = response.message;
+    if (message) {
+      ui.showToast(message, "info");
+      view("login");
     } else {
-      ui.showToast("register successful", "info");
-      view("home");
+      ui.showToast(error, "error");
     }
   }
 
@@ -135,7 +134,7 @@ let handler = (function () {
     if (token) {
       view("chatList");
     } else {
-      view("home");
+      view("login");
     }
   }
 
@@ -144,6 +143,10 @@ let handler = (function () {
     init: init,
     messageFromBroadcast: messageFromBroadcast,
     messageFromPort: messageFromPort,
+    loadRegister: loadRegister,
+    loadLogin: loadLogin,
+    apiLogin: apiLogin,
+    apiRegister: apiRegister,
     //login: login,
     //register: register,
     //openChat: openChat,
