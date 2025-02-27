@@ -1,7 +1,7 @@
 import dom from "./dom.js";
 import ui from "./ui.js";
 import api from "./api.js";
-import { sleep, getToken, setToken } from "./helper.js";
+import { sleep, getToken, setToken, deleteToken } from "./helper.js";
 import worker from "./main.worker.js";
 
 let handler = (function () {
@@ -35,7 +35,7 @@ let handler = (function () {
     if (token) {
       ui.showToast("login successful", "info");
       setToken(token);
-      view("chatList");
+      location.reload();
     } else {
       ui.showToast(response.detail, "error");
     }
@@ -107,6 +107,12 @@ let handler = (function () {
       console.log("in send-message");
       console.log(data);
       ui.messageAdd(data["data"], data["current_user"]);
+    } else if (action == "token") {
+      console.log("token-response: ", data);
+      if (data["status"] == "failed") {
+        deleteToken();
+        view("login");
+      }
     }
   }
 

@@ -2,6 +2,9 @@ import handler from "./handler.js";
 import { getToken, sleep } from "./helper.js";
 
 let worker = (async function () {
+  if (!getToken()) {
+    return {};
+  }
   let worker = new SharedWorker("/static/js/worker.js");
   let id = self.crypto.randomUUID();
   let webSocketState = WebSocket.CONNECTING;

@@ -129,9 +129,17 @@ async def websocket_handler(websocket: WebSocket):
         token = j_data["data"]["token"]
         user = get_user(token)
         await websocket.send_json(
-            {"action": "token", "from": j_data["data"]["from"], "data": "successful"}
+            {
+                "action": "token",
+                "from": j_data["data"]["from"],
+                "status": "ok",
+                "data": "successful",
+            }
         )
     except Exception:
+        await websocket.send_json(
+            {"action": "token", "status": "failed", "error": "token expired"}
+        )
         await websocket.close()
         return
 
