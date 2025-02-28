@@ -3,7 +3,7 @@ from mchat.helper import db_connect
 
 
 @db_connect
-def add_message(curs, message):
+def add(curs, message):
     return d_message.add(curs, message)
 
 
@@ -14,4 +14,4 @@ def get(curs, id):
 
 @db_connect
 def get_by_chat(curs, user_id, friend_id):
-    return d_message.get_by_chat({"user_id": user_id, "friend_id": friend_id})
+    return d_message.get_by_chat(curs, {"user_id": user_id, "friend_id": friend_id})

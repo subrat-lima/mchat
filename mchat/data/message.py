@@ -9,15 +9,44 @@ def add(curs, message):
         (data, message_type, sender_id, receiver_id, parent_message_id, expiry_date)
     VALUES
         (:data, :message_type, :sender_id, :receiver_id, :parent_message_id, :expiry_date)
-    RETURNING *"""
+    RETURNING id 
+    """
     return db.one(curs, statement, message)
 
 
 def get(curs, id: int):
-    statement = """SELECT * FROM messages WHERE id = ?"""
+    statement = """SELECT 
+        m.id, 
+        m.expiry_date,
+        m.create_date,
+        m.message_type,
+        m.parent_message_id,
+        m.status,
+        m.sender_id,
+        m.receiver_id,
+        m.data,
+        users.username as sender_username
+    FROM messages m
+    JOIN users ON m.sender_id = users.id
+    WHERE m.id = ?"""
     return db.one(curs, statement, (id,))
 
 
 def get_by_chat(curs, chat_users):
-    statement = """SELECT * FROM messages WHERE sender_id IN (:user_id, :friend_id) AND receiver_id IN (:user_id, :friend_id)"""
+    statement = """SELECT 
+        m.id, 
+        m.expiry_date,
+        m.create_date,
+        m.message_type,
+        m.parent_message_id,
+        m.status,
+        m.sender_id,
+        m.receiver_id,
+        m.data,
+        users.username as sender_username
+    FROM messages m
+    JOIN users ON m.sender_id = users.id
+    WHERE m.sender_id IN (:user_id, :friend_id) AND m.receiver_id IN (:user_id, :friend_id)
+    ORDER BY m.create_date;
+    """
     return db.all(curs, statement, chat_users)

@@ -40,28 +40,3 @@ def all(curs, statement, data=None):
     else:
         curs.execute(statement, data)
     return curs.fetchall()
-
-
-def add(curs, statement, data):
-    curs.execute(statement, data)
-    row = curs.fetchone()
-    return row if row else None
-
-
-def get(curs, statement, data, cls):
-    curs.execute(statement, data)
-    row = curs.fetchone()
-    if row:
-        return cls(**row)
-    return None
-
-
-def get_all(curs, statement, data, cls):
-    if data is None:
-        curs.execute(statement)
-    else:
-        curs.execute(statement, data)
-    rows = curs.fetchall()
-    if rows:
-        return [cls(**row) for row in rows]
-    return None

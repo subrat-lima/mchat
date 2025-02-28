@@ -10,11 +10,11 @@ from fastapi.security import (
 
 import mchat.data.user as d_user
 from mchat.helper import db_connect, hash_password, match_password
-from mchat.model import Token, User, UserIn
+from mchat.model import Token
 
 
 @db_connect
-def register(curs, in_user: UserIn):
+def register(curs, in_user: HTTPBasicCredentials):
     db_user = d_user.get_by_username(curs, in_user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="user already exists")

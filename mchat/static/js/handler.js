@@ -29,11 +29,8 @@ let handler = (function () {
   }
 
   async function apiLogin(e) {
-    e.preventDefault();
-    let form = e.target;
-    let response = await api.login(form.username.value, form.password.value);
+    let response = await api.auth(e);
     let token = await response.access_token;
-    console.log("token: ", token);
     if (token) {
       ui.showToast("login successful", "info");
       set("token", token);
@@ -44,9 +41,7 @@ let handler = (function () {
   }
 
   async function apiRegister(e) {
-    e.preventDefault();
-    let form = e.target;
-    let response = await api.register(form.username.value, form.password.value);
+    let response = await api.auth(e);
     let error = response.detail;
     let message = response.message;
     if (message) {
@@ -59,17 +54,15 @@ let handler = (function () {
 
   async function apiOpenChat(e) {
     e.preventDefault();
-    console.log("open chat");
+    let form = e.target;
     ui.loader("messages");
-    let article = e.target;
-    let receiver_id = article.dataset.id;
-    let type = article.dataset.type;
-    let name = article.dataset.name;
+    let receiver_id = form.dataset.id;
+    let receiver_name = form.dataset.name;
     let wr = await worker;
     await wr.send({
       action: "open-chat",
       receiver_id: receiver_id,
-      type: type,
+      receiver_name: receiver_name,
     });
   }
 
@@ -79,8 +72,6 @@ let handler = (function () {
   }
 
   async function messageFromBroadcast(data) {
-    console.log("msg for everyone");
-    console.log(data);
     messageFromPort(data);
   }
 
@@ -90,20 +81,25 @@ let handler = (function () {
     if (action == "get-chat-list") {
       ui.chatList(data["chats"]);
     } else if (action == "open-chat") {
-      ui.messageList(data["chat"], data["data"]);
+      ui.messageList(data["chat"], data["messages"]);
     } else if (action == "send-message") {
-      console.log("in send-message");
-      console.log(data);
-      ui.messageAdd(data["data"], data["current_user"]);
+      ui.messageAdd(data["message"]);
     } else if (action == "token") {
       await wsTokenResponse(data);
     } else if (action == "add-chat") {
-      await wsOpenChat(data["data"]);
+      if (data["status"] == "ok") {
+        await wsOpenChat(data["chat"], data["messages"]);
+      } else {
+        document.getElementById("dialog").remove();
+        ui.showToast(data["error"], "error");
+      }
     }
   }
 
-  async function wsOpenChat(chat, messages = []) {
-    console.log("chat: ", chat);
+  async function wsOpenChat(chat, messages) {
+    if (!messages) {
+      messages = [];
+    }
     ui.messageList(chat, messages);
   }
 
@@ -112,7 +108,7 @@ let handler = (function () {
       del(["token", "username", "id"]);
       view("login");
     } else {
-      let { username, id } = resp["data"];
+      let { username, id } = resp["user"];
       set("username", username);
       set("id", id);
     }
@@ -124,12 +120,17 @@ let handler = (function () {
     let wr = await worker;
     await wr.send({
       action: "send-message",
-      message: form.message.value,
-      receiver_id: form.dataset.id,
-      type: form.dataset.type,
-      parent_id: form.parent_id.value,
+      message: {
+        data: form.data.value,
+        receiver_id: form.dataset.id,
+        message_type: form.message_type.value,
+        parent_message_id: form.parent_message_id.value,
+        expiry_date: null,
+      },
     });
-    form.message.value = "";
+    form.data.value = "";
+    form.message_type.value = "";
+    form.parent_message_id.value = "";
   }
 
   function backToChatView(e) {
@@ -148,7 +149,6 @@ let handler = (function () {
 
   function loadAddChat(e) {
     e.preventDefault();
-    console.log("load chat");
     view("addChat");
   }
 
@@ -156,9 +156,7 @@ let handler = (function () {
     e.preventDefault();
     let username = e.target.username.value;
     let wr = await worker;
-    await wr.send({ action: "add-chat", data: { username: username } });
-
-    console.log("api add chat");
+    await wr.send({ action: "add-chat", username: username });
   }
 
   async function loadChat(e) {
@@ -170,8 +168,7 @@ let handler = (function () {
     e.preventDefault();
     del(["token", "username", "id"]);
     location.reload();
-    console.log("logout successful");
-    ui.showToast("logout successfully");
+    ui.showToast("logout successful");
   }
 
   return {

@@ -50,8 +50,7 @@ let ui = (function () {
   }
 
   function addChat() {
-    console.log("inside addchat");
-    let dialog = dom.elem("dialog", { open: true });
+    let dialog = dom.elem("dialog", { id: "dialog", open: true });
     let article = dom.elem("article");
     let header = dom.elem("p");
     let button = dom.elem(
@@ -74,7 +73,6 @@ let ui = (function () {
   }
 
   function chatList(chats) {
-    console.log("chats: ", chats);
     let section = dom.elem("section", { cls: "chat" });
     let article = dom.elem("article", { cls: "header" });
     let header = dom.elem("div");
@@ -110,17 +108,14 @@ let ui = (function () {
         sender_name = "me";
       }
 
-      let article = dom.elem(
-        "article",
-        {
-          "data-id": chat_id,
-          "data-name": chat_name,
-          cls: "pointer",
-        },
-        { click: handler.apiOpenChat },
-      );
-      let span = dom.elem("div");
-      let small = dom.elem("small");
+      let attrs = {
+        "data-id": chat_id,
+        "data-name": chat_name,
+        cls: "pointer",
+      };
+      let article = dom.elem("article", attrs, { click: handler.apiOpenChat });
+      let span = dom.elem("div", attrs);
+      let small = dom.elem("small", attrs);
 
       dom.set(span, dom.text(chat_name));
       dom.set(small, dom.text(`${sender_name}: ${chat["data"]}`));
@@ -131,32 +126,36 @@ let ui = (function () {
   }
 
   function messageAdd(msg) {
-    //let { id, sender_id, sender_name, data, type, create_date } = msg;
-    let current_user = get("username");
-    let { id, sender_id, parent_id, sender_name, message, type, create_date } =
-      msg;
+    let me = get("username");
+    let {
+      id,
+      sender_username,
+      parent_message_id,
+      data,
+      message_type,
+      create_date,
+      status,
+      expiry_date,
+    } = msg;
     let section = document.getElementById("messages");
-    let cls = current_user == sender_name ? "message right" : "message left";
+    let cls = me == sender_username ? "message right" : "message left";
     let article = dom.elem("article", {
       cls: cls,
       "data-id": id,
-      "data-sender-id": sender_id,
-      "data-parent-id": parent_id,
+      "data-parent-id": parent_message_id,
     });
     // TODO: handle other data types
     let text = dom.elem("span", { cls: "text" });
-    dom.set(text, dom.text(message));
+    dom.set(text, dom.text(data));
     let date = dom.elem("small", { cls: "date right" });
     dom.set(date, dom.text(getDisplayDate(create_date)));
     dom.set(article, [text, date]);
     dom.set(section, article, false);
-    console.log("article: ", article);
-    console.log("section: ", section);
-    console.log("added message");
   }
 
   function messageList(chat, messages) {
-    let { receiver_id, type, name } = chat;
+    let chat_id = chat["id"];
+    let chat_name = chat["name"];
     let main_div = dom.elem("div", { cls: "main-chat" });
     let nav = dom.elem("article");
     let button = dom.elem(
@@ -168,25 +167,26 @@ let ui = (function () {
     let section = dom.elem("section", { id: "messages", cls: "list" });
     let form = dom.elem(
       "form",
-      { "data-type": type, "data-id": receiver_id, cls: "search-form" },
+      { "data-id": chat_id, cls: "search-form" },
       { submit: handler.apiSendMessage },
     );
     let fieldset = dom.elem("fieldset", { role: "group" });
-    let input = dom.input("message", "text", null, false);
-    let input_hidden = dom.input("parent_id", "text", null, false);
+    let input = dom.input("data", "text", "message", false);
+    let input_hidden = dom.input("parent_message_id", "text", null, false);
+    let input_hidden_2 = dom.input("message_type", "text", null, false);
     input_hidden.classList.add("hide");
+    input_hidden_2.classList.add("hide");
     let submit = dom.elem("input", { type: "submit", value: "send" });
 
     button.innerHTML = "&#8592;";
-    dom.set(header, dom.text(name));
+    dom.set(header, dom.text(chat_name));
     dom.set(nav, [button, header]);
-    dom.set(fieldset, [input, input_hidden, submit]);
+    dom.set(fieldset, [input, input_hidden, input_hidden_2, submit]);
     dom.set(form, fieldset);
 
     dom.set(main_div, [nav, section, form]);
     dom.set(null, main_div);
     for (let msg of messages) {
-      console.log("msg: ", msg);
       messageAdd(msg);
     }
   }

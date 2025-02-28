@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import WebSocket, WebSocketDisconnect
 
 import mchat.service.auth as s_auth
 import mchat.service.chat as s_chat
-from mchat.helper import db_connect
-from mchat.model import MessageIn
+import mchat.service.message as s_message
+import mchat.service.user as s_user
 
 
 class ConnectionManager:
@@ -18,9 +18,7 @@ class ConnectionManager:
     async def disconnect(self, username: str, websocket: WebSocket):
         self.active_connections[username].remove(websocket)
 
-    async def send_message_to_chat(
-        self, message: dict, usernames: list[str], websocket: WebSocket
-    ):
+    async def send_message_to_users(self, message: dict, usernames: list[str]):
         for username in usernames:
             for connection in self.active_connections.get(username, []):
                 await connection.send_json(message)
@@ -33,72 +31,47 @@ async def handleRequest(user, websocket, data):
     action = data["action"]
     if action == "get-chat-list":
         chats = s_chat.get_chats_by_user(user["id"])
-        print("chats: ", chats)
         resp = {"action": action, "from": data["from"], "chats": chats}
         await websocket.send_json(resp)
     elif action == "open-chat":
-        messages = s_chat.get_messages(user, data["type"], data["receiver_id"])
-        messages = [message.dict() for message in messages]
-        resp = {"action": action, "from": data["from"], "data": messages}
-        chat_name = s_chat.get_chat_name(user.id, data["receiver_id"], data["type"])
-        resp["chat"] = {
-            "current_user": user.username,
-            "receiver_id": data["receiver_id"],
-            "type": data["type"],
-            "name": chat_name,
-        }
-        await websocket.send_json(resp)
-    elif action == "send-message":
-        category = 0 if data["type"] == "direct" else 1
-        if data["type"] == "direct":
-            recipient_id = data["receiver_id"]
-            recipient_group_id = None
-        else:
-            recipient_group_id = data["receiver_id"]
-            recipient_id = None
-        parent_id = None if data["parent_id"] == "" else int(data["parent_id"])
-        in_message = MessageIn(
-            message=data["message"],
-            category=category,
-            parent_message_id=parent_id,
-            recipient_id=recipient_id,
-            recipient_group_id=recipient_group_id,
-        )
-        msg_id = s_chat.add_message(user, in_message)
-        message = s_chat.get_message(msg_id["id"])
+        messages = s_message.get_by_chat(user["id"], data["receiver_id"])
         resp = {
             "action": action,
             "from": data["from"],
-            "data": message.dict(),
-            "current_user": user.username,
-        }
-        recipient = s_chat.get_user(recipient_id)
-        recipient_resp = {
-            "action": action,
-            "data": message.dict(),
-            "current_user": recipient.username,
+            "chat": {"id": data["receiver_id"], "name": data["receiver_name"]},
+            "messages": messages,
         }
         await websocket.send_json(resp)
-        await manager.send_message_to_chat(
-            recipient_resp, [recipient.username], websocket
-        )
+    elif action == "send-message":
+        message = data["message"]
+        message["sender_id"] = user["id"]
+        db_resp = s_message.add(message)
+        db_message = s_message.get(db_resp["id"])
+        receiver = s_user.get(message["receiver_id"])
+        resp = {"action": action, "message": db_message}
+        await manager.send_message_to_users(resp, [receiver["username"]])
+        resp["from"] = data["from"]
+        await websocket.send_json(resp)
     elif action == "add-chat":
-        print("data:", data)
-        recipient_username = data["data"]["username"]
-        print("recipient_username: ", recipient_username)
-        recipient = s_chat.get_user_by_username(recipient_username)
-        await websocket.send_json(
-            {
+        receiver = s_user.get_by_username(data["username"])
+        if receiver is None:
+            error_resp = {
                 "action": action,
                 "from": data["from"],
-                "status": "ok",
-                "data": {
-                    "receiver_id": recipient.id,
-                    "name": recipient.username,
-                    "type": "direct",
-                },
+                "status": "failed",
+                "error": "user not found",
             }
-        )
+            await websocket.send_json(error_resp)
+            return
+        messages = s_message.get_by_chat(user["id"], receiver["id"])
+        resp = {
+            "action": action,
+            "from": data["from"],
+            "status": "ok",
+            "chat": {"id": receiver["id"], "name": receiver["username"]},
+            "messages": messages,
+        }
+        await websocket.send_json(resp)
 
 
 async def handler(websocket: WebSocket):
@@ -112,7 +85,7 @@ async def handler(websocket: WebSocket):
                 "action": "token",
                 "from": j_data["data"]["from"],
                 "status": "ok",
-                "data": {"username": user["username"], "id": user["id"]},
+                "user": {"username": user["username"], "id": user["id"]},
             }
         )
     except Exception:
@@ -128,4 +101,4 @@ async def handler(websocket: WebSocket):
             j_data = await websocket.receive_json()
             await handleRequest(user, websocket, j_data["data"])
     except WebSocketDisconnect:
-        manager.disconnect(user["username"], websocket)
+        await manager.disconnect(user["username"], websocket)

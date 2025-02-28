@@ -65,14 +65,6 @@ button {
   margin-bottom: 1rem;
 }
 
-ul {
-  list-style-type: none !important;
-}
-
-li {
-  list-style: none !important;
-}
-
 .hide {
   display: none;
 }

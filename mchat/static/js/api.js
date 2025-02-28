@@ -1,37 +1,22 @@
 let api = (function () {
-  async function post(url, body, content_type) {
+  async function auth(e) {
+    e.preventDefault();
+    let form = e.target;
+    let url = form.getAttribute("action");
     let attrs = {
       method: "post",
-      body: body,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        username: form.username.value,
+        password: form.password.value,
+      }),
     };
-    if (content_type == "json") {
-      attrs["body"] = JSON.stringify(body);
-      attrs["headers"] = { "Content-Type": "application/json" };
-    }
     let response = await fetch(url, attrs).then((resp) => resp.json());
-
     return response;
   }
 
-  async function register(username, password) {
-    let body = {
-      username: username,
-      password: password,
-    };
-    return await post("/register", body, "json");
-  }
-
-  async function login(username, password) {
-    let body = {
-      username: username,
-      password: password,
-    };
-    return await post("/login", body, "json");
-  }
-
   return {
-    login: login,
-    register: register,
+    auth: auth,
   };
 })();
 

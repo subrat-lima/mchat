@@ -57,7 +57,7 @@ let dom = (function () {
   function form(name, inputs, handler) {
     let form = elem(
       "form",
-      { method: "post", action: "#" },
+      { method: "post", action: `/${name}` },
       { submit: handler },
     );
     let legend = elem("legend");

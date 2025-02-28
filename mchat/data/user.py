@@ -1,10 +1,11 @@
 from typing import Optional
 
+from fastapi.security import HTTPBasicCredentials
+
 import mchat.helper as db
-from mchat.model import User, UserIn
 
 
-def add(curs, user: UserIn):
+def add(curs, user: HTTPBasicCredentials):
     statement = """INSERT INTO users (username, password) VALUES(:username, :password) RETURNING *"""
     return db.one(curs, statement, user.dict())
 
