@@ -116,7 +116,7 @@ button {
   position: fixed;
   z-index: 1;
   left: 50%;
-  bottom: 30px;
+  bottom: 10%;
 }
 
 #toast.show {
@@ -143,7 +143,7 @@ button {
     opacity: 0;
   }
   to {
-    bottom: 30px;
+    bottom: 10%;
     opacity: 1;
   }
 }
@@ -154,7 +154,7 @@ button {
     opacity: 0;
   }
   to {
-    bottom: 30px;
+    bottom: 10%;
     opacity: 1;
   }
 }
@@ -172,7 +172,7 @@ button {
 
 @keyframes fadeout {
   from {
-    bottom: 30px;
+    bottom: 10%;
     opacity: 1;
   }
   to {
