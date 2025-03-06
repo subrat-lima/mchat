@@ -7,6 +7,15 @@ legend {
   font-weight: bold;
 }
 
+legend,
+label,
+input[type="submit"],
+::placeholder,
+button,
+a {
+  text-transform: capitalize;
+}
+
 button {
   margin: auto 0.25rem;
 }

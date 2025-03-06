@@ -10,6 +10,11 @@ cd mchat
 # install dependencies
 uv sync
 
+# copy env file
+# set the values in .env file
+cp .env.example .env
+
+
 # initialize
 . ./.venv/bin/activate
 python init.py
