@@ -3,7 +3,7 @@ import { getDisplayDate, get } from "./helper.js";
 import handler from "./handler.js";
 
 let ui = (function () {
-  function register() {
+  function auth(path) {
     let section = dom.elem("section", { cls: "auth" });
     let header = dom.elem("div", { cls: "header" });
     let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
@@ -11,39 +11,22 @@ let ui = (function () {
 
     let article = dom.elem("article");
     let inputs = [{ name: "username" }, { name: "password", type: "password" }];
-    let form = dom.form("register", inputs, handler.apiRegister);
-
     let footer = dom.elem("footer", { cls: "footer" });
     let footer_text = dom.elem("p");
-    let a = dom.link("#login", "login", handler.loadLogin);
+    let form, a;
 
+    if (path == "register") {
+      form = dom.form("register", inputs, handler.serverAuth);
+      a = dom.link("login", "login", handler.loadAuth);
+      dom.set(footer_text, [dom.text("Already have an account ? "), a]);
+    } else {
+      form = dom.form("login", inputs, handler.serverAuth);
+      a = dom.link("register", "register now", handler.loadAuth);
+      dom.set(footer_text, [dom.text("Don't have an account ? "), a]);
+    }
     dom.set(header_text, dom.text("mchat"));
     dom.set(header, [logo, header_text]);
     dom.set(article, form);
-    dom.set(footer_text, [dom.text("Already have an account ? "), a]);
-    dom.set(footer, footer_text);
-    dom.set(section, [header, article, footer]);
-    dom.set(null, section);
-  }
-
-  function login() {
-    let section = dom.elem("section", { cls: "auth" });
-    let header = dom.elem("div", { cls: "header" });
-    let logo = dom.elem("img", { cls: "logo", src: "/static/img/chat.png" });
-    let header_text = dom.elem("strong");
-
-    let article = dom.elem("article");
-    let inputs = [{ name: "username" }, { name: "password", type: "password" }];
-    let form = dom.form("login", inputs, handler.apiLogin);
-
-    let footer = dom.elem("footer", { cls: "footer" });
-    let footer_text = dom.elem("p");
-    let a = dom.link("#register", "register now", handler.loadRegister);
-
-    dom.set(header_text, dom.text("mchat"));
-    dom.set(header, [logo, header_text]);
-    dom.set(article, form);
-    dom.set(footer_text, [dom.text("Don't have an account ? "), a]);
     dom.set(footer, footer_text);
     dom.set(section, [header, article, footer]);
     dom.set(null, section);
@@ -72,7 +55,7 @@ let ui = (function () {
     dom.set(null, dialog, false);
   }
 
-  function chatList(chats) {
+  function rooms(chats) {
     let section = dom.elem("section", { cls: "chat" });
     let article = dom.elem("article", { cls: "header" });
     let header = dom.elem("div");
@@ -191,10 +174,13 @@ let ui = (function () {
     }
   }
 
-  function loader(name = "page") {
-    let span = dom.elem("span", { "aria-busy": true, cls: "loader" });
-    dom.set(span, dom.text(`loading ${name}, please wait ...`));
-    dom.set(null, span);
+  function loader(show = true) {
+    let elem = document.getElementById("loader");
+    if (show) {
+      elem.classList.remove("hide");
+    } else {
+      elem.classList.add("hide");
+    }
   }
 
   function showToast(msg, category = "info") {
@@ -211,12 +197,12 @@ let ui = (function () {
   }
 
   return {
-    login: login,
-    register: register,
-    chatList: chatList,
+    auth: auth,
+    loader: loader,
+
+    rooms: rooms,
     messageAdd: messageAdd,
     messageList: messageList,
-    loader: loader,
     showToast: showToast,
     addChat: addChat,
   };

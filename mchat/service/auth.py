@@ -10,7 +10,6 @@ from fastapi.security import (
 
 import mchat.data.user as d_user
 from mchat.helper import db_connect, hash_password, match_password
-from mchat.model import Token
 
 
 @db_connect
@@ -20,11 +19,11 @@ def register(curs, in_user: HTTPBasicCredentials):
         raise HTTPException(status_code=400, detail="user already exists")
     in_user.password = hash_password(in_user.password)
     d_user.add(curs, in_user)
-    return {"status": 200, "message": "user registered"}
+    return {"status": True, "detail": "user registered"}
 
 
 @db_connect
-def login(curs, in_user: HTTPBasicCredentials) -> Token:
+def login(curs, in_user: HTTPBasicCredentials):
     db_user = d_user.get_by_username(curs, in_user.username)
     if not db_user:
         raise HTTPException(status_code=404, detail="user not found")
@@ -33,7 +32,12 @@ def login(curs, in_user: HTTPBasicCredentials) -> Token:
     expire = datetime.now(timezone.utc) + timedelta(minutes=600)
     data = {"sub": in_user.username, "exp": expire}
     encoded_jwt = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm="HS256")
-    return Token(access_token=encoded_jwt)
+    return {
+        "access_token": encoded_jwt,
+        "token_type": "bearer",
+        "status": True,
+        "detail": "login successful",
+    }
 
 
 @db_connect

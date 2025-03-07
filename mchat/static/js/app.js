@@ -1,7 +1,6 @@
-import dom from "./dom.js";
-import ui from "./ui.js";
-import api from "./api.js";
-import worker from "./main.worker.js";
+//import dom from "./dom.js";
+//import ui from "./ui.js";
+//import worker from "./main.worker.js";
 import handler from "./handler.js";
 
 async function init(e) {

@@ -1,54 +1,75 @@
 import dom from "./dom.js";
 import ui from "./ui.js";
-import api from "./api.js";
+import db from "./db.js";
 import { sleep, get, set, del } from "./helper.js";
 import worker from "./main.worker.js";
 
 let handler = (function () {
-  function view(name) {
-    if (name == "login") {
-      ui.login(handler);
-    } else if (name == "register") {
-      ui.register(handler);
-    } else if (name == "chatList") {
-      ui.loader("chat");
-      wsChatList();
-    } else if (name == "addChat") {
-      ui.addChat();
+  async function httpAuth(e) {
+    e.preventDefault();
+    let form = e.target;
+    let url = form.getAttribute("action");
+    let attrs = {
+      method: "post",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        username: form.username.value,
+        password: form.password.value,
+      }),
+    };
+    let response = await fetch(url, attrs).then((resp) => resp.json());
+    return response;
+  }
+
+  async function loadAuth(e) {
+    e.preventDefault();
+    ui.auth(e.target.getAttribute("href"));
+  }
+
+  async function serverAuth(e) {
+    let response = await httpAuth(e);
+    let message = await response.detail;
+    let m_type = (await response.status) ? "info" : "error";
+    let path = e.target.id;
+    ui.showToast(message, m_type);
+    if (!response.status) {
+      return;
     }
-  }
-
-  async function loadLogin(e) {
-    e.preventDefault();
-    view("login");
-  }
-
-  async function loadRegister(e) {
-    e.preventDefault();
-    view("register");
-  }
-
-  async function apiLogin(e) {
-    let response = await api.auth(e);
+    if (path == "register") {
+      return ui.auth("login");
+    }
     let token = await response.access_token;
-    if (token) {
-      ui.showToast("login successful", "info");
-      set("token", token);
-      location.reload();
-    } else {
-      ui.showToast(response.detail, "error");
-    }
+    set("token", token);
+    init();
   }
 
-  async function apiRegister(e) {
-    let response = await api.auth(e);
-    let error = response.detail;
-    let message = response.message;
-    if (message) {
-      ui.showToast(message, "info");
-      view("login");
-    } else {
-      ui.showToast(error, "error");
+  function init() {
+    if (!get("token")) {
+      return ui.auth("login");
+    }
+    loadRooms();
+    syncServer();
+  }
+
+  /* refactored end  */
+
+  //let last_synced = db.last_synced();
+  //let wr = await worker;
+  //await wr.send({ action: "sync", from: last_synced });
+  //await wr.send({ action: "get-contacts" });
+  //await wr.send({ action: "get-chat-list" });
+
+  function loadRooms() {
+    ui.loader();
+    ui.rooms([]);
+    ui.loader(false);
+  }
+
+  function syncServer() {}
+
+  function view(name) {
+    if (name == "addChat") {
+      ui.addChat();
     }
   }
 
@@ -66,11 +87,6 @@ let handler = (function () {
     });
   }
 
-  async function wsChatList() {
-    let wr = await worker;
-    await wr.send({ action: "get-chat-list" });
-  }
-
   async function messageFromBroadcast(data) {
     messageFromPort(data);
   }
@@ -79,11 +95,11 @@ let handler = (function () {
     let data = j_data["data"];
     let action = data["action"];
     if (action == "get-chat-list") {
-      ui.chatList(data["chats"]);
+      ui.rooms(data["chats"]);
     } else if (action == "open-chat") {
       ui.messageList(data["chat"], data["messages"]);
     } else if (action == "send-message") {
-      ui.messageAdd(data["message"]);
+      wsSendMessageResponse(j_data);
     } else if (action == "token") {
       await wsTokenResponse(data);
     } else if (action == "add-chat") {
@@ -93,6 +109,20 @@ let handler = (function () {
         document.getElementById("dialog").remove();
         ui.showToast(data["error"], "error");
       }
+    } else if (action == "get-contacts") {
+      let contacts = data["contacts"];
+      console.log("contacts: ", contacts);
+      //db.addUsers(contacts);
+    }
+  }
+
+  async function wsSendMessageResponse(j_data) {
+    console.log("j_data: ", j_data);
+    let current_ui = document.querySelector("main > div");
+    let ui_id = current_ui.id;
+    let receiver_id = current_ui.dataset.receiver_id;
+    if (ui_id == "main-chat") {
+      ui.messageAdd(data["message"]);
     }
   }
 
@@ -133,20 +163,6 @@ let handler = (function () {
     form.parent_message_id.value = "";
   }
 
-  function backToChatView(e) {
-    e.preventDefault();
-    view("chatList");
-  }
-
-  function init() {
-    let token = get("token");
-    if (token) {
-      view("chatList");
-    } else {
-      view("login");
-    }
-  }
-
   function loadAddChat(e) {
     e.preventDefault();
     view("addChat");
@@ -161,7 +177,7 @@ let handler = (function () {
 
   async function loadChat(e) {
     e.preventDefault();
-    view("chatList");
+    loadRooms();
   }
 
   function logout(e) {
@@ -172,15 +188,14 @@ let handler = (function () {
   }
 
   return {
-    view: view,
     init: init,
+    loadAuth: loadAuth,
+    serverAuth: serverAuth,
+    /* refactored end */
+    view: view,
     messageFromBroadcast: messageFromBroadcast,
     messageFromPort: messageFromPort,
-    loadRegister: loadRegister,
-    loadLogin: loadLogin,
-    apiLogin: apiLogin,
     apiSendMessage: apiSendMessage,
-    apiRegister: apiRegister,
     apiAddChat: apiAddChat,
     loadAddChat: loadAddChat,
     loadChat: loadChat,
